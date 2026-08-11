@@ -1,0 +1,10 @@
+body { font-family: 'Prompt', sans-serif; background-color: #f8fafc; color: #334155; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.swal2-input, .swal2-file { font-family: 'Prompt', sans-serif; font-size: 13px !important; }
+.perspective-1000 { perspective: 1000px; }
+.flashcard-inner { transition: transform 0.6s; transform-style: preserve-3d; }
+.flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+.backface-hidden { backface-visibility: hidden; }
+.rotate-y-180 { transform: rotateY(180deg); }
