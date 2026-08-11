@@ -262,6 +262,13 @@ function handleFileSelect(e) {
   if(appState.selectedFiles.length > 0) {
     container.classList.remove('hidden');
     list.innerHTML = appState.selectedFiles.map(f => `<div class="text-xs bg-white p-2 rounded border border-slate-100 flex justify-between"><span class="truncate">${f.name}</span><span class="text-slate-400">${(f.size/1024/1024).toFixed(2)} MB</span></div>`).join('');
+    
+    const firstFile = appState.selectedFiles[0].name;
+    const titleWithoutExt = firstFile.substring(0, firstFile.lastIndexOf('.')) || firstFile;
+    const docTitleInput = document.getElementById('docTitleName');
+    if (docTitleInput && !docTitleInput.value) {
+      docTitleInput.value = titleWithoutExt;
+    }
   } else {
     container.classList.add('hidden');
   }
