@@ -618,3 +618,15 @@ function closeIframeModal() {
     document.getElementById('contentIframe').src = '';
   }, 300);
 }
+
+document.addEventListener('keydown', function(e) {
+  if (document.getElementById('fcViewerModal') && !document.getElementById('fcViewerModal').classList.contains('hidden')) {
+    if (e.key === 'ArrowLeft') prevFc();
+    if (e.key === 'ArrowRight') nextFc();
+    if (e.key === 'Escape') closeFcViewer();
+    if (e.key === ' ' || e.key === 'Enter') {
+      const inner = document.querySelector('#fcViewerCardContainer .flashcard-inner');
+      if(inner) inner.classList.toggle('flashcard-flipped');
+    }
+  }
+});
