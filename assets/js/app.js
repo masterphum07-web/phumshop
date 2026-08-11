@@ -89,7 +89,7 @@ function filterDocuments() {
   tb.innerHTML = docs.map(d => `
     <tr class="hover:bg-slate-50 border-b transition">
       <td class="py-3 px-2 flex gap-2 font-medium"><i class="fa-solid fa-file text-blue-500 mt-0.5"></i> ${d.title}</td>
-      <td class="py-3 px-2 text-slate-500 max-w-[150px] truncate" title="${d.originalFilename || '-'}">${d.originalFilename || '-'}</td>
+      <td class="py-3 px-2 text-slate-500 max-w-[150px] truncate" title="${d.originalFilename && d.originalFilename !== '-' ? d.originalFilename : d.title}">${d.originalFilename && d.originalFilename !== '-' ? d.originalFilename : '<span class="text-slate-300 italic text-[10px] font-normal">ไม่มีข้อมูล (ไฟล์เก่า)</span>'}</td>
       <td class="py-3 px-2">${d.uploader}</td>
       <td class="py-3 px-2"><span class="bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 rounded-full text-[10px] font-semibold">${d.category}</span></td>
       <td class="py-3 px-2 text-right"><a href="${d.fileUrl}" target="_blank" class="text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-semibold transition">เปิดไฟล์ <i class="fa-solid fa-arrow-up-right-from-square text-[10px] ml-1"></i></a></td>
@@ -175,23 +175,72 @@ async function handleFormSubmit(e) {
 
 function toggleAdminView() {
   if(appState.username) {
-    appState.username = ''; document.getElementById('adminBtnText').innerText = 'เข้าสู่ระบบ'; document.getElementById('userNameDisplay').innerText = 'ผู้ใช้งานทั่วไป'; refreshData();
+    appState.username = ''; 
+    document.getElementById('adminBtnText').innerText = 'เข้าสู่ระบบ'; 
+    document.getElementById('userNameDisplay').innerText = 'ผู้ใช้งานทั่วไป'; 
+    refreshData();
   } else {
-    Swal.fire({
-      title: 'เข้าสู่ระบบ', html: '<input id="u" class="swal2-input" placeholder="Username"><input id="p" type="password" class="swal2-input" placeholder="Password">',
-      preConfirm: () => ({ u: document.getElementById('u').value, p: document.getElementById('p').value }),
-      confirmButtonText: 'Login',
-      confirmButtonColor: '#2563eb'
-    }).then(r => {
-      if(r.isConfirmed) {
-        Swal.fire({ title: 'กำลังตรวจสอบ...', didOpen: () => Swal.showLoading() });
-        callAPI('verifyLogin', { username: r.value.u, password: r.value.p }).then(res => {
-          if(res.success) { appState.username = res.username; document.getElementById('adminBtnText').innerText = 'ออกระบบ'; document.getElementById('userNameDisplay').innerText = res.username; Swal.fire('เข้าสู่ระบบสำเร็จ', `ยินดีต้อนรับคุณ ${res.username}`, 'success'); refreshData(); }
-          else Swal.fire('ข้อมูลไม่ถูกต้อง', res.message, 'error');
-        });
-      }
-    });
+    // Show custom modal instead of SweetAlert
+    const modal = document.getElementById('loginModal');
+    const content = document.getElementById('loginModalContent');
+    modal.classList.remove('hidden');
+    // Animate in
+    setTimeout(() => {
+      content.classList.remove('scale-95', 'opacity-0');
+      content.classList.add('scale-100', 'opacity-100');
+    }, 10);
   }
+}
+
+function closeLoginModal() {
+  const modal = document.getElementById('loginModal');
+  const content = document.getElementById('loginModalContent');
+  // Animate out
+  content.classList.remove('scale-100', 'opacity-100');
+  content.classList.add('scale-95', 'opacity-0');
+  setTimeout(() => {
+    modal.classList.add('hidden');
+    document.getElementById('loginUsername').value = '';
+    document.getElementById('loginPassword').value = '';
+  }, 300);
+}
+
+function submitLogin() {
+  const u = document.getElementById('loginUsername').value;
+  const p = document.getElementById('loginPassword').value;
+  
+  if(!u || !p) return;
+  
+  const btn = document.getElementById('loginSubmitBtn');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังตรวจสอบ...';
+  btn.disabled = true;
+  
+  callAPI('verifyLogin', { username: u, password: p }).then(res => {
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+    
+    if(res.success) { 
+      closeLoginModal();
+      appState.username = res.username; 
+      document.getElementById('adminBtnText').innerText = 'ออกระบบ'; 
+      document.getElementById('userNameDisplay').innerText = res.username; 
+      Swal.fire({
+        icon: 'success',
+        title: 'เข้าสู่ระบบสำเร็จ',
+        text: `ยินดีต้อนรับคุณ ${res.username}`,
+        timer: 1500,
+        showConfirmButton: false
+      });
+      refreshData(); 
+    } else {
+      Swal.fire('ข้อมูลไม่ถูกต้อง', res.message, 'error');
+    }
+  }).catch(err => {
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+    Swal.fire('ข้อผิดพลาด', err.toString(), 'error');
+  });
 }
 
 function loadActivityLogs() {

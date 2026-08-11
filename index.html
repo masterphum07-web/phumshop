@@ -278,6 +278,43 @@
     </main>
   </div>
   
+  <!-- Custom Login Modal -->
+  <div id="loginModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeLoginModal()"></div>
+    <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-md relative z-10 overflow-hidden transform transition-all duration-300 scale-95 opacity-0" id="loginModalContent">
+      <div class="h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600"></div>
+      <div class="p-8">
+        <button onclick="closeLoginModal()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <div class="text-center mb-8 mt-2">
+          <div class="w-20 h-20 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-5 text-blue-600 text-3xl shadow-inner border border-blue-100 transform rotate-3">
+            <i class="fa-solid fa-shield-halved -rotate-3"></i>
+          </div>
+          <h2 class="text-2xl font-black text-slate-800 tracking-tight">เข้าสู่ระบบ (Admin)</h2>
+          <p class="text-xs text-slate-500 mt-2 font-medium">กรุณาเข้าสู่ระบบเพื่อจัดการเอกสารและผู้ใช้งาน</p>
+        </div>
+        <div class="space-y-5">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">ชื่อผู้ใช้งาน</label>
+            <div class="relative group">
+              <i class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition"></i>
+              <input type="text" id="loginUsername" placeholder="Username" class="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-100 outline-none transition font-medium text-sm">
+            </div>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">รหัสผ่าน</label>
+            <div class="relative group">
+              <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition"></i>
+              <input type="password" id="loginPassword" placeholder="Password" class="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-100 outline-none transition font-medium text-sm">
+            </div>
+          </div>
+          <button onclick="submitLogin()" id="loginSubmitBtn" class="w-full mt-4 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm">
+            ยืนยันการเข้าสู่ระบบ <i class="fa-solid fa-arrow-right-to-bracket"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <style>
     .animate-fade-in { animation: fadeIn 0.4s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
