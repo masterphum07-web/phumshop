@@ -72,14 +72,17 @@ function refreshData() {
 }
 
 function updateCategoryDropdowns() {
-  const cats = appState.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+  const cats = appState.categories.filter(c => c.name.trim() !== '').map(c => `<option value="${c.name}">${c.name}</option>`).join('');
   document.getElementById('categoryFilter').innerHTML = '<option value="">ทุกวิชา</option>' + cats;
   document.getElementById('docCategorySelect').innerHTML = cats;
-  document.getElementById('studySubjectFilter').innerHTML = '<option value="">เลือกวิชาทั้งหมด</option>' + cats;
+  
+  const catsForStudy = appState.categories.filter(c => c.name.trim() !== '').map(c => `<option value="${c.name}" class="text-slate-800">${c.name}</option>`).join('');
+  document.getElementById('studySubjectFilter').innerHTML = '<option value="" class="text-slate-800">เลือกวิชาทั้งหมด</option>' + catsForStudy;
+  
   document.getElementById('fcSubject').innerHTML = cats;
   
   if(appState.username && appState.role === 'admin') {
-    document.getElementById('adminSubjectList').innerHTML = appState.categories.map(c => 
+    document.getElementById('adminSubjectList').innerHTML = appState.categories.filter(c => c.name.trim() !== '').map(c => 
       `<span class="px-3 py-1.5 bg-slate-100 border border-slate-200 text-slate-600 rounded-lg text-xs font-bold">${c.name}</span>`
     ).join('');
   }
@@ -128,7 +131,7 @@ function filterStudyData() {
   
   const docs = appState.documents.filter(d => {
     const matchSubj = subj ? d.category === subj : true;
-    const matchType = type ? d.docType === type : (d.docType !== 'ทั่วไป');
+    const matchType = type ? d.docType === type : true;
     return matchSubj && matchType;
   });
   
@@ -160,7 +163,12 @@ function renderFlashcards() {
   }
   
   grid.innerHTML = fcs.map((f, index) => {
-    let imgTag = f.image && f.image !== '-' ? `<img src="${f.image}" class="mt-3 w-full h-24 object-cover rounded-lg shadow-sm" alt="image">` : '';
+    let imgUrl = f.image;
+    if (imgUrl && imgUrl !== '-' && imgUrl.includes('drive.google.com/file/d/')) {
+      const match = imgUrl.match(/[-\w]{25,}/);
+      if (match) imgUrl = `https://drive.google.com/uc?export=view&id=${match[0]}`;
+    }
+    let imgTag = imgUrl && imgUrl !== '-' ? `<img src="${imgUrl}" class="mt-3 w-full h-24 object-cover rounded-lg shadow-sm" alt="image">` : '';
     let delBtn = (appState.username === f.username || appState.role === 'admin') 
       ? `<button onclick="deleteFlashcard('${f.id}', event)" class="absolute top-3 right-3 w-6 h-6 bg-red-100 text-red-500 rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-trash-can text-xs"></i></button>` 
       : '';
