@@ -74,7 +74,9 @@ function refreshData() {
 function updateCategoryDropdowns() {
   const cats = appState.categories.filter(c => c.name.trim() !== '').map(c => `<option value="${c.name}">${c.name}</option>`).join('');
   document.getElementById('categoryFilter').innerHTML = '<option value="">ทุกวิชา</option>' + cats;
-  document.getElementById('docCategorySelect').innerHTML = cats;
+  
+  const datalist = document.getElementById('docCategoryList');
+  if(datalist) datalist.innerHTML = cats;
   
   const catsForStudy = appState.categories.filter(c => c.name.trim() !== '').map(c => `<option value="${c.name}" class="text-slate-800">${c.name}</option>`).join('');
   document.getElementById('studySubjectFilter').innerHTML = '<option value="" class="text-slate-800">เลือกวิชาทั้งหมด</option>' + catsForStudy;
@@ -130,7 +132,7 @@ function filterStudyData() {
   const type = document.getElementById('studyTypeFilter').value;
   
   const docs = appState.documents.filter(d => {
-    const matchSubj = subj ? d.category === subj : true;
+    const matchSubj = subj ? d.category.toLowerCase() === subj.toLowerCase() : true;
     const matchType = type ? d.docType === type : true;
     return matchSubj && matchType;
   });
@@ -166,9 +168,9 @@ function renderFlashcards() {
     let imgUrl = f.image;
     if (imgUrl && imgUrl !== '-' && imgUrl.includes('drive.google.com/file/d/')) {
       const match = imgUrl.match(/[-\w]{25,}/);
-      if (match) imgUrl = `https://drive.google.com/uc?export=view&id=${match[0]}`;
+      if (match) imgUrl = `https://drive.google.com/thumbnail?id=${match[0]}&sz=w800`;
     }
-    let imgTag = imgUrl && imgUrl !== '-' ? `<img src="${imgUrl}" class="mt-3 w-full h-24 object-cover rounded-lg shadow-sm" alt="image">` : '';
+    let imgTag = imgUrl && imgUrl !== '-' ? `<img src="${imgUrl}" class="mt-3 w-full h-24 object-cover rounded-lg shadow-sm" alt="ภาพประกอบ" loading="lazy">` : '';
     let delBtn = (appState.username === f.username || appState.role === 'admin') 
       ? `<button onclick="deleteFlashcard('${f.id}', event)" class="absolute top-3 right-3 w-6 h-6 bg-red-100 text-red-500 rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-trash-can text-xs"></i></button>` 
       : '';
