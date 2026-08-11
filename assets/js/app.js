@@ -114,7 +114,7 @@ function filterDocuments() {
         <span class="truncate max-w-[200px]" title="${d.title}">${d.title}</span>
       </td>
       <td class="py-3 px-2 text-slate-500 max-w-[150px] truncate hidden sm:table-cell" title="${d.originalFilename && d.originalFilename !== '-' ? d.originalFilename : d.title}">
-        ${d.originalFilename && d.originalFilename !== '-' ? d.originalFilename : '<span class="text-slate-300 italic text-[10px] font-normal">ไม่มีข้อมูล</span>'}
+        ${d.originalFilename && d.originalFilename !== '-' ? d.originalFilename : d.title}
       </td>
       <td class="py-3 px-2 text-slate-600">${d.uploader}</td>
       <td class="py-3 px-2"><span class="bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 rounded-md text-[10px] font-bold shadow-sm">${d.category}</span></td>
@@ -158,6 +158,9 @@ function filterStudyData() {
   renderTasks();
 }
 
+let currentFcIndex = 0;
+let currentFcArray = [];
+
 function renderFlashcards() {
   const subj = document.getElementById('studySubjectFilter').value;
   const grid = document.getElementById('flashcardGrid');
@@ -170,46 +173,92 @@ function renderFlashcards() {
     return;
   }
   
-  const fcs = appState.flashcards.filter(f => f.subject.toLowerCase() === subj.toLowerCase());
+  currentFcArray = appState.flashcards.filter(f => f.subject.toLowerCase() === subj.toLowerCase());
   
-  if(fcs.length === 0) {
-    grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 text-xs font-medium border-2 border-dashed border-slate-200 rounded-2xl">ยังไม่มีแฟลชการ์ดในวิชา ${subj}</div>`;
+  if(currentFcArray.length === 0) {
+    grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 text-xs font-medium border-2 border-dashed border-slate-200 rounded-2xl w-full">ยังไม่มีแฟลชการ์ดในวิชา ${subj}</div>`;
     return;
   }
   
-  grid.innerHTML = fcs.map((f, index) => {
-    let imgUrl = f.image;
-    if (imgUrl && imgUrl !== '-' && imgUrl.includes('drive.google.com/file/d/')) {
-      const match = imgUrl.match(/[-\w]{25,}/);
-      if (match) imgUrl = `https://drive.google.com/thumbnail?id=${match[0]}&sz=w800`;
-    }
-    let imgTag = imgUrl && imgUrl !== '-' ? `<img src="${imgUrl}" class="mt-3 w-full h-24 object-cover rounded-lg shadow-sm" alt="ภาพประกอบ" loading="lazy">` : '';
-    let delBtn = (appState.username === f.username || appState.role === 'admin') 
-      ? `<button onclick="deleteFlashcard('${f.id}', event)" class="absolute top-3 right-3 w-8 h-8 bg-red-500/90 text-white shadow-md rounded-full flex items-center justify-center hover:bg-red-600 hover:scale-110 transition z-20"><i class="fa-solid fa-trash-can text-sm"></i></button>` 
-      : '';
-      
-    return `
-      <div class="h-48 relative cursor-pointer group" onclick="this.querySelector('.flashcard-inner').classList.toggle('flashcard-flipped')">
-        <div class="flashcard-inner w-full h-full relative duration-500">
-          
-          <!-- Front -->
-          <div class="flashcard-front absolute w-full h-full bg-gradient-to-br from-fuchsia-500 to-purple-600 rounded-2xl p-5 text-white flex flex-col justify-center items-center text-center shadow-md">
-            <span class="absolute top-3 left-3 text-[9px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-md">${f.subject}</span>
-            ${delBtn}
-            <h4 class="font-bold text-lg leading-tight mt-2">${f.question}</h4>
-            <p class="text-[10px] text-fuchsia-200 absolute bottom-3"><i class="fa-solid fa-hand-pointer mr-1"></i> แตะเพื่อดูคำตอบ</p>
-          </div>
-          
-          <!-- Back -->
-          <div class="flashcard-back absolute w-full h-full bg-white border-2 border-fuchsia-100 rounded-2xl p-4 flex flex-col justify-center items-center text-center shadow-md overflow-hidden">
-            <p class="font-medium text-slate-700 text-sm overflow-y-auto">${f.answer}</p>
-            ${imgTag}
-          </div>
-          
-        </div>
+  // Render a "Deck" cover
+  grid.innerHTML = `
+    <div class="bg-gradient-to-br from-fuchsia-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg flex flex-col items-center justify-center text-center cursor-pointer hover:scale-[1.02] transition transform h-48 w-full max-w-sm mx-auto group" onclick="openFcViewer()">
+      <div class="w-16 h-16 bg-white/20 rounded-full flex justify-center items-center mb-3 group-hover:scale-110 transition">
+        <i class="fa-solid fa-play text-2xl ml-1"></i>
       </div>
-    `;
-  }).join('');
+      <h3 class="text-xl font-bold">ทบทวนวิชา ${subj}</h3>
+      <p class="text-fuchsia-100 text-sm mt-1">มีทั้งหมด ${currentFcArray.length} การ์ด</p>
+    </div>
+  `;
+}
+
+function openFcViewer() {
+  if (currentFcArray.length === 0) return;
+  currentFcIndex = 0;
+  
+  document.getElementById('fcViewerModal').classList.remove('hidden');
+  renderCurrentFc();
+}
+
+function closeFcViewer() {
+  document.getElementById('fcViewerModal').classList.add('hidden');
+}
+
+function prevFc() {
+  if (currentFcIndex > 0) {
+    currentFcIndex--;
+    renderCurrentFc();
+  }
+}
+
+function nextFc() {
+  if (currentFcIndex < currentFcArray.length - 1) {
+    currentFcIndex++;
+    renderCurrentFc();
+  }
+}
+
+function renderCurrentFc() {
+  const f = currentFcArray[currentFcIndex];
+  
+  document.getElementById('fcPrevBtn').disabled = currentFcIndex === 0;
+  document.getElementById('fcNextBtn').disabled = currentFcIndex === currentFcArray.length - 1;
+  document.getElementById('fcViewerCounter').innerText = `${currentFcIndex + 1} / ${currentFcArray.length}`;
+  
+  let imgUrl = f.image;
+  if (imgUrl && imgUrl !== '-' && imgUrl.includes('drive.google.com/file/d/')) {
+    const match = imgUrl.match(/[-\w]{25,}/);
+    if (match) imgUrl = `https://drive.google.com/thumbnail?id=${match[0]}&sz=w800`;
+  }
+  let imgTag = imgUrl && imgUrl !== '-' ? `<img src="${imgUrl}" class="mt-6 w-full max-h-48 object-contain rounded-lg shadow-sm" alt="ภาพประกอบ" loading="lazy">` : '';
+  
+  let delBtn = (appState.username === f.username || appState.role === 'admin') 
+      ? `<button onclick="deleteFlashcard('${f.id}', event); closeFcViewer();" class="absolute top-4 right-4 w-10 h-10 bg-red-500/90 text-white shadow-md rounded-full flex items-center justify-center hover:bg-red-600 hover:scale-110 transition z-20"><i class="fa-solid fa-trash-can text-sm"></i></button>` 
+      : '';
+  
+  const container = document.getElementById('fcViewerCardContainer');
+  
+  container.innerHTML = `
+    <div class="h-full relative cursor-pointer group" onclick="this.querySelector('.flashcard-inner').classList.toggle('flashcard-flipped')">
+      <div class="flashcard-inner w-full h-full relative duration-500">
+        
+        <!-- Front -->
+        <div class="flashcard-front absolute w-full h-full bg-gradient-to-br from-fuchsia-500 to-purple-600 rounded-2xl p-6 sm:p-10 text-white flex flex-col justify-center items-center text-center shadow-2xl border-4 border-white/10">
+          ${delBtn}
+          <h4 class="font-bold text-2xl sm:text-4xl leading-relaxed">${f.question}</h4>
+          <p class="text-sm text-fuchsia-200 absolute bottom-6"><i class="fa-solid fa-hand-pointer mr-2"></i> แตะเพื่อดูคำตอบ</p>
+        </div>
+        
+        <!-- Back -->
+        <div class="flashcard-back absolute w-full h-full bg-white border-4 border-fuchsia-100 rounded-2xl p-6 sm:p-10 flex flex-col justify-center items-center text-center shadow-2xl overflow-hidden">
+          <p class="font-medium text-slate-700 text-xl sm:text-2xl overflow-y-auto w-full">${f.answer}</p>
+          ${imgTag}
+          <p class="text-xs text-slate-400 absolute bottom-4"><i class="fa-solid fa-hand-pointer mr-2"></i> แตะเพื่อกลับไปคำถาม</p>
+        </div>
+        
+      </div>
+    </div>
+  `;
 }
 
 function renderTasks() {
