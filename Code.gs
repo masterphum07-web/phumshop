@@ -4,7 +4,14 @@ const SHEET_NAME = "Database";
 
 function doGet(e) {
   if (e && e.parameter && e.parameter.action) {
-    return handleRequest(e.parameter);
+    try {
+      let result = handleRequest(e.parameter);
+      return ContentService.createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (error) {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
   }
   return HtmlService.createHtmlOutput('API is running. This backend is for DOC HUB GitHub Pages.')
     .setTitle('DOC HUB API');
@@ -51,6 +58,8 @@ function handleRequest(data) {
     return deleteFlashcard(data.id, data.username);
   } else if (action === 'getSystemLogs') {
     return getSystemLogs();
+  } else if (action === 'updateSettings') {
+    return updateSettings(data.settings, data.username);
   } else {
     return { success: false, error: 'Action not found' };
   }
@@ -97,7 +106,7 @@ function getInitialData() {
          let fileUrl = row[5] ? String(row[5]) : "#";
          let category = row[6] ? String(row[6]) : "ทั่วไป";
          let originalFilename = row[7] ? String(row[7]) : "-";
-         let docType = row[8] ? String(row[8]) : "ทั่วไป"; // คอลัมน์ I สำหรับประเภทเนื้อหา
+         let docType = row[8] ? String(row[8]) : "ทั่วไป"; 
          
          categoriesSet.add(category);
          documents.push({ 
@@ -259,6 +268,31 @@ function deleteFlashcard(id, username) {
     }
     return { success: false, message: "Flashcard not found" };
   } catch(e) { return { success: false, message: e.toString() }; }
+}
+
+function updateSettings(settingsData, username) {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    let sheet = ss.getSheetByName("Settings");
+    if(!sheet) {
+      sheet = ss.insertSheet("Settings");
+      sheet.appendRow(["Key", "Value"]);
+    }
+    
+    // เคลียร์ข้อมูลเก่า
+    sheet.clearContents();
+    sheet.appendRow(["Key", "Value"]);
+    
+    // ใส่ข้อมูลใหม่
+    for (let key in settingsData) {
+      sheet.appendRow([key, settingsData[key]]);
+    }
+    
+    logActivity(`${username || "แอดมิน"} อัปเดตการตั้งค่าเว็บไซต์`);
+    return { success: true };
+  } catch (e) {
+    return { success: false, message: e.toString() };
+  }
 }
 
 function getSystemLogs() {

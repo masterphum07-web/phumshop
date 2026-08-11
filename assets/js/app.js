@@ -51,6 +51,11 @@ function refreshData() {
       document.getElementById('navTitle').innerText = res.settings.header_title;
       document.getElementById('bannerSubtitle').innerText = res.settings.cta_text;
       
+      if(document.getElementById('settingBannerTitle')) {
+        document.getElementById('settingBannerTitle').value = res.settings.header_title;
+        document.getElementById('settingBannerSubtitle').value = res.settings.cta_text;
+      }
+      
       updateCategoryDropdowns();
       filterDocuments();
       filterStudyData();
@@ -523,6 +528,31 @@ function handleAddSubject() {
   if(!name) return;
   fetch(API_URL + `?action=addNewCategory&subjectName=${encodeURIComponent(name)}&username=${appState.username}`).then(() => {
     document.getElementById('newSubjectName').value = '';
+    refreshData();
+  });
+}
+
+function saveSettings() {
+  const t = document.getElementById('settingBannerTitle').value;
+  const s = document.getElementById('settingBannerSubtitle').value;
+  const btn = document.getElementById('saveSettingsBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
+  
+  const payload = {
+    action: 'updateSettings',
+    username: appState.username || 'admin',
+    settings: { bannerTitle: t, bannerSubtitle: s }
+  };
+  
+  fetch(API_URL, {
+    method: 'POST', mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(() => {
+    btn.disabled = false;
+    btn.innerHTML = 'บันทึกการตั้งค่า';
+    Swal.fire('สำเร็จ', 'บันทึกการตั้งค่าหน้าเว็บเรียบร้อย', 'success');
     refreshData();
   });
 }
