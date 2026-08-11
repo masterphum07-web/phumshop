@@ -119,9 +119,9 @@ function filterDocuments() {
       <td class="py-3 px-2 text-slate-600">${d.uploader}</td>
       <td class="py-3 px-2"><span class="bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 rounded-md text-[10px] font-bold shadow-sm">${d.category}</span></td>
       <td class="py-3 px-4 text-right">
-        <a href="${d.fileUrl}" target="_blank" class="inline-flex items-center gap-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-bold text-xs transition">
+        <button onclick="openIframeModal('${d.fileUrl}', '${d.title}')" class="inline-flex items-center gap-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-bold text-xs transition">
           เปิดไฟล์ <i class="fa-solid fa-arrow-up-right-from-square"></i>
-        </a>
+        </button>
       </td>
     </tr>
   `).join('');
@@ -147,7 +147,7 @@ function filterStudyData() {
         <td class="py-3 px-2"><span class="bg-pink-50 text-pink-600 border border-pink-100 px-2 py-0.5 rounded-md text-[10px] font-bold">${d.docType}</span></td>
         <td class="py-3 px-2 text-slate-500 text-xs">${d.uploader}</td>
         <td class="py-3 px-2 text-right">
-          <a href="${d.fileUrl}" target="_blank" class="text-slate-400 hover:text-pink-600 transition"><i class="fa-solid fa-circle-play text-lg"></i></a>
+          <button onclick="openIframeModal('${d.fileUrl}', '${d.title}')" class="text-slate-400 hover:text-pink-600 transition"><i class="fa-solid fa-circle-play text-lg"></i></button>
         </td>
       </tr>
     `).join('');
@@ -172,7 +172,7 @@ function renderFlashcards() {
     }
     let imgTag = imgUrl && imgUrl !== '-' ? `<img src="${imgUrl}" class="mt-3 w-full h-24 object-cover rounded-lg shadow-sm" alt="ภาพประกอบ" loading="lazy">` : '';
     let delBtn = (appState.username === f.username || appState.role === 'admin') 
-      ? `<button onclick="deleteFlashcard('${f.id}', event)" class="absolute top-3 right-3 w-6 h-6 bg-red-100 text-red-500 rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-trash-can text-xs"></i></button>` 
+      ? `<button onclick="deleteFlashcard('${f.id}', event)" class="absolute top-3 right-3 w-8 h-8 bg-red-500/90 text-white shadow-md rounded-full flex items-center justify-center hover:bg-red-600 hover:scale-110 transition z-20"><i class="fa-solid fa-trash-can text-sm"></i></button>` 
       : '';
       
     return `
@@ -572,4 +572,36 @@ function saveSettings() {
     Swal.fire('สำเร็จ', 'บันทึกการตั้งค่าหน้าเว็บเรียบร้อย', 'success');
     refreshData();
   });
+}
+
+// ---------------------------------------------------
+// Iframe Modal Logic
+// ---------------------------------------------------
+function openIframeModal(url, title) {
+  let finalUrl = url;
+  if (url.includes('drive.google.com/file/d/')) {
+    finalUrl = url.replace('/view', '/preview');
+  }
+  
+  document.getElementById('iframeModalTitle').innerText = title;
+  document.getElementById('iframeModalExternal').href = url;
+  
+  const iframe = document.getElementById('contentIframe');
+  iframe.classList.add('hidden');
+  document.getElementById('iframeLoading').classList.remove('hidden');
+  iframe.src = finalUrl;
+  
+  document.getElementById('iframeModal').classList.remove('hidden');
+  setTimeout(() => {
+    document.getElementById('iframeModalContent').classList.remove('scale-95', 'opacity-0');
+  }, 10);
+}
+
+function closeIframeModal() {
+  const content = document.getElementById('iframeModalContent');
+  content.classList.add('scale-95', 'opacity-0');
+  setTimeout(() => {
+    document.getElementById('iframeModal').classList.add('hidden');
+    document.getElementById('contentIframe').src = '';
+  }, 300);
 }
