@@ -630,3 +630,23 @@ document.addEventListener('keydown', function(e) {
     }
   }
 });
+
+// Touch Swipe Support for Mobile/iPad
+let touchStartX = 0;
+let touchEndX = 0;
+
+const fcContainer = document.getElementById('fcViewerCardContainer');
+if (fcContainer) {
+  fcContainer.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+  });
+  
+  fcContainer.addEventListener('touchend', e => {
+    touchEndX = e.changedTouches[0].screenX;
+    if (touchStartX - touchEndX > 50) {
+      nextFc(); // Swipe left -> Next
+    } else if (touchEndX - touchStartX > 50) {
+      prevFc(); // Swipe right -> Prev
+    }
+  });
+}
