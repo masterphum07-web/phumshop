@@ -3,7 +3,6 @@ const FOLDER_ID = "1Hz7M113zG2bVGfkPy7ACRgLj5LbBUQAq";
 const SHEET_NAME = "Database"; 
 
 function doGet(e) {
-  // หากมีการเรียกผ่าน URL ตรงๆ อาจจะแสดงข้อความว่า API ทำงานอยู่
   if (e && e.parameter && e.parameter.action) {
     return handleRequest(e.parameter);
   }
@@ -17,7 +16,6 @@ function doPost(e) {
     if (e.postData.type === "application/json") {
       requestData = JSON.parse(e.postData.contents);
     } else {
-      // รองรับกรณีส่งแบบ text หรือ form
       requestData = JSON.parse(e.postData.contents || "{}");
     }
     
@@ -40,15 +38,17 @@ function handleRequest(data) {
   } else if (action === 'addNewCategory') {
     return addNewCategory(data.subjectName, data.username);
   } else if (action === 'uploadFileToDrive') {
-    return uploadFileToDrive(data.base64Data, data.filename, data.mimeType, data.category, data.uploader, data.docTitle);
+    return uploadFileToDrive(data.base64Data, data.filename, data.mimeType, data.category, data.uploader, data.docTitle, data.docType);
   } else if (action === 'uploadDocumentByLink') {
-    return uploadDocumentByLink(data.docTitle, data.url, data.category, data.uploader);
+    return uploadDocumentByLink(data.docTitle, data.url, data.category, data.uploader, data.docType);
   } else if (action === 'addChecklistTask') {
     return addChecklistTask(data.username, data.subject, data.detail);
   } else if (action === 'toggleChecklistTask') {
     return toggleChecklistTask(data.id, data.currentStatus);
   } else if (action === 'addFlashcardItem') {
     return addFlashcardItem(data.username, data.subject, data.question, data.answer, data.imageBase64, data.imageName, data.imageMime);
+  } else if (action === 'deleteFlashcard') {
+    return deleteFlashcard(data.id, data.username);
   } else if (action === 'getSystemLogs') {
     return getSystemLogs();
   } else {
@@ -96,17 +96,20 @@ function getInitialData() {
          let uploader = row[4] ? String(row[4]) : "Unknown";
          let fileUrl = row[5] ? String(row[5]) : "#";
          let category = row[6] ? String(row[6]) : "ทั่วไป";
-         let originalFilename = row[7] ? String(row[7]) : "-"; // คอลัมน์ใหม่ สำหรับชื่อไฟล์ต้นฉบับ
+         let originalFilename = row[7] ? String(row[7]) : "-";
+         let docType = row[8] ? String(row[8]) : "ทั่วไป"; // คอลัมน์ I สำหรับประเภทเนื้อหา
          
          categoriesSet.add(category);
          documents.push({ 
+           id: "DOC_" + i,
            title: title, 
            uploader: uploader, 
            uploadDate: String(row[0]), 
            fileSize: 0, 
            category: category, 
            fileUrl: fileUrl,
-           originalFilename: originalFilename
+           originalFilename: originalFilename,
+           docType: docType
          });
       }
     }
@@ -171,7 +174,7 @@ function addNewCategory(subjectName, username) {
   } catch(e) { return { success: false, message: e.toString() }; }
 }
 
-function uploadFileToDrive(base64Data, filename, mimeType, category, uploader, docTitle) {
+function uploadFileToDrive(base64Data, filename, mimeType, category, uploader, docTitle, docType) {
   try {
     const folder = DriveApp.getFolderById(FOLDER_ID); 
     const blob = Utilities.newBlob(Utilities.base64Decode(base64Data), mimeType, filename);
@@ -179,19 +182,17 @@ function uploadFileToDrive(base64Data, filename, mimeType, category, uploader, d
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     let docSheet = ss.getSheetByName(SHEET_NAME);
-    // เพิ่มชื่อไฟล์ลงไปในคอลัมน์ H (Index 7)
-    if(docSheet) docSheet.appendRow([new Date(), "-", docTitle || filename, "อัปโหลดไฟล์", uploader, file.getUrl(), category, filename]);
+    if(docSheet) docSheet.appendRow([new Date(), "-", docTitle || filename, "อัปโหลดไฟล์", uploader, file.getUrl(), category, filename, docType || "ทั่วไป"]);
     logActivity(`อัปโหลดไฟล์: ${docTitle || filename} โดย ${uploader}`);
     return { success: true };
   } catch(e) { return { success: false, message: e.toString() }; }
 }
 
-function uploadDocumentByLink(docTitle, url, category, uploader) {
+function uploadDocumentByLink(docTitle, url, category, uploader, docType) {
   try {
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     let docSheet = ss.getSheetByName(SHEET_NAME);
-    // กรณีลิงก์ อาจจะไม่มีชื่อไฟล์ ให้ใส่เป็น "Link" หรือชื่อเอกสาร
-    if(docSheet) docSheet.appendRow([new Date(), "-", docTitle, "เพิ่มจากลิงก์", uploader, url, category, "External Link"]);
+    if(docSheet) docSheet.appendRow([new Date(), "-", docTitle, "เพิ่มจากลิงก์", uploader, url, category, "External Link", docType || "ทั่วไป"]);
     logActivity(`เพิ่มเอกสารใหม่จากลิงก์: ${docTitle} โดย ${uploader}`);
     return { success: true };
   } catch(e) { return { success: false, message: e.toString() }; }
@@ -237,7 +238,26 @@ function addFlashcardItem(username, subject, question, answer, imageBase64, imag
     let sheet = ss.getSheetByName("Flashcards");
     if(!sheet) { sheet = ss.insertSheet("Flashcards"); sheet.appendRow(["ID", "Username", "SubjectID", "Question", "Answer", "ImageURL"]); }
     sheet.appendRow(["FLS_" + Utilities.getUuid().substring(0,8), username, subject, question, answer, imageUrl]);
+    logActivity(`${username} สร้างแฟลชการ์ดหมวด ${subject}`);
     return { success: true };
+  } catch(e) { return { success: false, message: e.toString() }; }
+}
+
+function deleteFlashcard(id, username) {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    let sheet = ss.getSheetByName("Flashcards");
+    if(!sheet) return { success: false, message: "Sheet not found" };
+    
+    const data = sheet.getDataRange().getValues();
+    for(let i=1; i<data.length; i++) {
+      if(String(data[i][0]) === String(id)) {
+        sheet.deleteRow(i + 1);
+        logActivity(`${username || "แอดมิน"} ลบแฟลชการ์ด ID: ${id}`);
+        return { success: true };
+      }
+    }
+    return { success: false, message: "Flashcard not found" };
   } catch(e) { return { success: false, message: e.toString() }; }
 }
 

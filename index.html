@@ -3,145 +3,95 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DOC HUB | Document & Backup System</title>
+  <title>DOC HUB - ระบบคลังเอกสาร</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
-<body class="bg-slate-100 min-h-screen flex text-slate-800 overflow-x-hidden selection:bg-blue-200">
+<body class="text-slate-800 antialiased bg-slate-50 min-h-screen flex flex-col">
 
-  <!-- Mobile Overlay -->
-  <div id="mobileBackdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-slate-900/50 z-30 hidden md:hidden backdrop-blur-sm transition-all"></div>
-
-  <!-- ================= LEFT SIDEBAR ================= -->
-  <aside id="sidebar" class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between fixed inset-y-0 left-0 z-40 shadow-2xl md:shadow-sm transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
-    <div class="p-5 space-y-6 overflow-y-auto">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-3 px-2">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold shadow-lg shadow-blue-500/30">
+  <!-- Navigation -->
+  <nav class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30 transform hover:scale-105 transition cursor-pointer">
             <i class="fa-solid fa-layer-group text-lg"></i>
           </div>
-          <div>
-            <h1 id="appTitleText" class="font-bold text-slate-800 leading-tight tracking-tight">DOC HUB</h1>
-            <p class="text-[9px] text-blue-600 font-bold tracking-widest uppercase">Drive System</p>
-          </div>
+          <span class="font-black text-xl tracking-tight text-slate-800" id="navTitle">DOC HUB</span>
         </div>
-        <button onclick="toggleMobileSidebar()" class="md:hidden text-slate-400 p-2 hover:bg-slate-100 rounded-lg transition"><i class="fa-solid fa-xmark text-lg"></i></button>
-      </div>
-      
-      <nav class="space-y-1.5 text-xs font-semibold">
-        <p class="px-3 text-[10px] text-slate-400 uppercase tracking-wider mb-2 mt-4">เมนูหลัก</p>
-        <button onclick="switchTab('home')" id="navHome" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-blue-50 text-blue-700 transition text-left shadow-sm border border-blue-100">
-          <i class="fa-solid fa-folder-open text-sm w-4 text-center"></i> คลังเอกสาร & ไฟล์
-        </button>
-        <button onclick="switchTab('study')" id="navStudy" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-purple-600 transition text-left border border-transparent">
-          <i class="fa-solid fa-book-open-reader text-sm w-4 text-center"></i> โหมดเตรียมสอบ
-        </button>
         
-        <div class="pt-6 mt-6 border-t border-slate-100 space-y-1.5">
-          <p class="px-3 text-[10px] text-slate-400 uppercase tracking-wider mb-2">การจัดการระบบ</p>
-          <button onclick="uiAddNewCategory()" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-500 hover:bg-emerald-50 hover:text-emerald-700 transition text-left">
-            <i class="fa-solid fa-folder-plus text-sm w-4 text-center"></i> สร้างหมวดหมู่ใหม่
-          </button>
+        <div class="hidden md:flex items-center space-x-1 bg-slate-100 p-1 rounded-xl border border-slate-200/60">
+          <button onclick="switchTab('tabMain')" id="btnTabMain" class="px-5 py-2 rounded-lg text-sm font-bold bg-white text-blue-600 shadow-sm transition">หน้าหลัก</button>
+          <button onclick="switchTab('tabStudy')" id="btnTabStudy" class="px-5 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-800 transition">โหมดเตรียมสอบ</button>
+          <button onclick="switchTab('tabDashboard')" id="btnTabDashboard" class="hidden px-5 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-800 transition">แดชบอร์ด</button>
         </div>
-      </nav>
-    </div>
-    
-    <div class="p-4 border-t border-slate-100 bg-slate-50 m-4 rounded-2xl border">
-      <button onclick="refreshData(true)" class="w-full py-2.5 text-xs bg-white border border-slate-200 hover:border-blue-300 hover:text-blue-600 rounded-xl font-bold transition shadow-sm flex justify-center items-center gap-2">
-        <i class="fa-solid fa-arrows-rotate text-blue-500"></i> โหลดข้อมูลล่าสุด
-      </button>
-    </div>
-  </aside>
 
-  <!-- ================= MAIN CONTAINER ================= -->
-  <div class="flex-1 flex flex-col md:ml-64 min-w-0 transition-all duration-300">
-    <header class="bg-white/80 backdrop-blur-xl border-b border-slate-200 sticky top-0 z-20 shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 sm:px-8 py-4 flex items-center justify-between gap-4">
-        <div class="flex items-center gap-3 flex-1 max-w-xl">
-          <button onclick="toggleMobileSidebar()" class="md:hidden p-2 bg-slate-100 rounded-lg text-slate-600 hover:bg-slate-200 transition"><i class="fa-solid fa-bars"></i></button>
-          <div class="relative w-full group">
-            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm group-focus-within:text-blue-500 transition"></i>
-            <input type="text" id="searchInput" oninput="filterDocuments()" placeholder="ค้นหาเอกสาร, ชื่อไฟล์ หรือชื่อผู้อัปโหลด..." class="w-full pl-11 pr-4 py-2.5 bg-slate-100/80 border border-transparent rounded-xl text-xs sm:text-sm focus:bg-white focus:border-blue-300 focus:ring-4 focus:ring-blue-100 outline-none transition-all shadow-inner">
+        <div class="flex items-center gap-3">
+          <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-full border border-slate-200">
+            <div class="w-6 h-6 bg-slate-300 rounded-full flex items-center justify-center text-white text-xs"><i class="fa-solid fa-user"></i></div>
+            <span class="text-xs font-bold text-slate-600" id="userNameDisplay">ผู้ใช้งานทั่วไป</span>
           </div>
-        </div>
-        <div class="flex items-center gap-4">
-          <button onclick="toggleAdminView()" class="px-4 py-2 text-xs font-bold bg-white text-slate-600 rounded-xl flex items-center gap-2 border border-slate-200 hover:bg-slate-50 hover:text-blue-600 transition shadow-sm">
-            <i class="fa-solid fa-shield-halved"></i><span id="adminBtnText" class="hidden sm:inline">เข้าสู่ระบบ</span>
-          </button>
-          <div class="flex items-center gap-3 pl-4 border-l border-slate-200">
-            <div class="hidden sm:block text-right">
-              <p id="userNameDisplay" class="text-[13px] font-bold text-slate-700 leading-none">ผู้ใช้งานทั่วไป</p>
-              <p class="text-[10px] text-emerald-500 font-semibold mt-1">ออนไลน์</p>
-            </div>
-            <div class="w-10 h-10 rounded-full bg-slate-100 border-2 border-white shadow-sm flex items-center justify-center text-slate-400 text-lg relative">
-              <i class="fa-solid fa-circle-user"></i>
-              <div class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-white rounded-full"></div>
-            </div>
-          </div>
+          <button onclick="toggleAdminView()" id="adminBtnText" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition transform hover:-translate-y-0.5">เข้าสู่ระบบ</button>
         </div>
       </div>
-    </header>
+    </div>
+  </nav>
 
-    <main class="p-4 sm:p-8 max-w-7xl w-full mx-auto space-y-8">
+  <!-- Mobile Tabs -->
+  <div class="md:hidden bg-white border-b border-slate-200 p-2 flex justify-center gap-2">
+    <button onclick="switchTab('tabMain')" id="btnTabMainMobile" class="flex-1 py-2 text-xs font-bold bg-blue-50 text-blue-600 rounded-lg">หน้าหลัก</button>
+    <button onclick="switchTab('tabStudy')" id="btnTabStudyMobile" class="flex-1 py-2 text-xs font-bold text-slate-500 hover:bg-slate-50 rounded-lg">เตรียมสอบ</button>
+    <button onclick="switchTab('tabDashboard')" id="btnTabDashboardMobile" class="hidden flex-1 py-2 text-xs font-bold text-slate-500 hover:bg-slate-50 rounded-lg">แดชบอร์ด</button>
+  </div>
+
+  <div class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+    <main>
       
-      <!-- Top Message / Loader -->
-      <div id="systemMessageBanner" class="bg-blue-50 border border-blue-200 text-blue-700 p-4 rounded-2xl text-xs font-semibold flex items-center gap-3 shadow-sm animate-pulse">
-        <i class="fa-solid fa-spinner fa-spin-pulse text-lg"></i> กำลังเชื่อมต่อกับฐานข้อมูลระบบ...
-      </div>
+      <!-- ================= TAB 1: MAIN ================= -->
+      <div id="tabMain" class="space-y-8 animate-fade-in">
+        <div class="bg-white rounded-3xl p-8 sm:p-12 shadow-sm border border-slate-200 text-center relative overflow-hidden">
+          <div class="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
+          <div class="absolute -right-20 -top-20 w-64 h-64 bg-blue-50 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+          <div class="absolute -left-20 -bottom-20 w-64 h-64 bg-purple-50 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+          <h1 class="text-3xl sm:text-5xl font-black text-slate-800 mb-4 tracking-tight" id="bannerTitle">กำลังโหลด...</h1>
+          <p class="text-slate-500 font-medium text-sm sm:text-base max-w-2xl mx-auto" id="bannerSubtitle">โปรดรอสักครู่ ระบบกำลังเชื่อมต่อฐานข้อมูล</p>
+        </div>
 
-      <!-- ================= TAB 1: HOME ================= -->
-      <div id="tabHome" class="space-y-8 animate-fade-in">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div class="lg:col-span-8 space-y-8">
-            
-            <!-- Hero Banner -->
-            <div class="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white p-8 sm:p-10 rounded-[2rem] shadow-xl shadow-blue-900/20 relative overflow-hidden flex items-center min-h-[200px]">
-              <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-              <div class="relative z-10 space-y-3 max-w-md">
-                <span class="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-bold tracking-wider uppercase border border-white/20 shadow-sm">Cloud Storage V2</span>
-                <h2 id="bannerTitle" class="text-3xl sm:text-4xl font-black tracking-tight drop-shadow-md">Doc Hub & Backup</h2>
-                <p id="ctaText" class="text-sm text-blue-100 font-medium leading-relaxed drop-shadow">ระบบพื้นที่จัดเก็บเอกสารกลาง อัปโหลดและแชร์ไฟล์ได้ทันที เชื่อมต่อ Google Drive อัตโนมัติ</p>
-              </div>
-              <i class="fa-solid fa-cloud-arrow-up absolute -right-6 -bottom-10 opacity-10 text-[180px] rotate-[-10deg]"></i>
-            </div>
-            
-            <!-- Categories -->
-            <div class="space-y-4">
-              <div class="flex justify-between items-end">
-                <div>
-                  <h3 class="text-lg font-bold text-slate-800">หมวดหมู่เอกสาร</h3>
-                  <p class="text-xs text-slate-500 font-medium mt-1">เลือกหมวดหมู่เพื่อกรองข้อมูล</p>
+          <div class="lg:col-span-8">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full">
+              <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50/50">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shadow-inner"><i class="fa-solid fa-folder-open"></i></div>
+                  <div>
+                    <h2 class="text-lg font-bold text-slate-800">คลังเอกสารทั่วไป</h2>
+                    <p class="text-xs text-slate-500">ค้นหาและดาวน์โหลดเอกสารทั้งหมด</p>
+                  </div>
                 </div>
-                <div class="relative">
-                  <select id="categoryFilter" onchange="filterDocuments()" class="appearance-none text-xs font-bold bg-white border border-slate-200 rounded-xl pl-4 pr-10 py-2.5 outline-none focus:border-blue-500 shadow-sm cursor-pointer text-blue-700">
-                    <option value="ALL">แสดงทั้งหมด</option>
+                <div class="flex gap-2 w-full sm:w-auto">
+                  <div class="relative flex-1 sm:w-48">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="searchInput" onkeyup="filterDocuments()" placeholder="ค้นหาชื่อไฟล์..." class="w-full pl-8 pr-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition">
+                  </div>
+                  <select id="categoryFilter" onchange="filterDocuments()" class="w-28 text-sm bg-white border border-slate-200 rounded-lg px-2 py-2 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition cursor-pointer">
+                    <option value="">ทุกวิชา</option>
                   </select>
-                  <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none"></i>
                 </div>
               </div>
-              <div id="categoryCardsGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-4"></div>
-            </div>
-
-            <!-- Documents Table -->
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-              <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-list text-blue-500"></i> รายการเอกสารล่าสุด</h3>
-              </div>
-              <div class="overflow-x-auto p-1">
-                <table class="w-full text-left border-collapse">
-                  <thead>
-                    <tr class="text-[11px] text-slate-400 uppercase tracking-wider bg-white">
-                      <th class="py-3 px-4 font-bold border-b border-slate-200">ชื่อเอกสาร</th>
-                      <th class="py-3 px-4 font-bold border-b border-slate-200">ชื่อไฟล์จริง (ระบบ)</th>
-                      <th class="py-3 px-4 font-bold border-b border-slate-200">ผู้อัปโหลด</th>
-                      <th class="py-3 px-4 font-bold border-b border-slate-200">หมวดหมู่</th>
-                      <th class="py-3 px-4 font-bold border-b border-slate-200 text-right">เปิดดู</th>
+              <div class="overflow-x-auto flex-1">
+                <table class="w-full text-sm text-left whitespace-nowrap">
+                  <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+                    <tr>
+                      <th class="py-3 px-4 font-bold">ชื่อเรื่อง</th>
+                      <th class="py-3 px-2 font-bold hidden sm:table-cell">ชื่อไฟล์เดิม</th>
+                      <th class="py-3 px-2 font-bold">ผู้อัปโหลด</th>
+                      <th class="py-3 px-2 font-bold">วิชา</th>
+                      <th class="py-3 px-4 font-bold text-right">ลิงก์</th>
                     </tr>
                   </thead>
-                  <tbody id="documentsTableBody" class="text-xs bg-white">
+                  <tbody id="docTableBody" class="divide-y divide-slate-100">
                     <tr><td colspan="5" class="py-12 text-center text-slate-400 font-medium">กำลังประมวลผลข้อมูล...</td></tr>
                   </tbody>
                 </table>
@@ -149,9 +99,8 @@
             </div>
           </div>
 
+          <!-- Upload Form -->
           <div class="lg:col-span-4 space-y-6">
-            
-            <!-- Upload Form -->
             <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm relative overflow-hidden">
               <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-400 to-indigo-500"></div>
               
@@ -176,28 +125,37 @@
                   <input type="text" id="docTitleName" required placeholder="เช่น สรุปบทเรียนบทที่ 1..." class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-100 outline-none transition">
                 </div>
                 
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-slate-700 mb-1.5">จัดอยู่ในหมวดหมู่วิชา <span class="text-red-500">*</span></label>
+                    <select id="docCategorySelect" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-100 outline-none transition text-slate-700 cursor-pointer"></select>
+                  </div>
+                  <div>
+                    <label class="block text-slate-700 mb-1.5">ประเภทเนื้อหา <span class="text-red-500">*</span></label>
+                    <select id="docTypeSelect" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-100 outline-none transition text-slate-700 cursor-pointer">
+                      <option value="ทั่วไป">ทั่วไป</option>
+                      <option value="สรุป">สรุปเนื้อหา</option>
+                      <option value="ข้อสอบ">แนวข้อสอบ</option>
+                      <option value="แบบฝึกหัด">แบบฝึกหัด</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div>
                   <label class="block text-slate-700 mb-1.5">ชื่อผู้แชร์ / ผู้อัปโหลด <span class="text-red-500">*</span></label>
                   <input type="text" id="uploaderName" required placeholder="ชื่อของคุณ" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-100 outline-none transition">
                 </div>
                 
-                <div>
-                  <label class="block text-slate-700 mb-1.5">จัดอยู่ในหมวดหมู่วิชา <span class="text-red-500">*</span></label>
-                  <select id="docCategorySelect" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-100 outline-none transition text-slate-700 cursor-pointer"></select>
-                </div>
-                
                 <div id="sectionFileUpload" class="block pt-2">
-                  <div onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-slate-300 hover:border-blue-400 bg-slate-50 hover:bg-blue-50/50 p-8 text-center rounded-xl cursor-pointer transition group">
-                    <div class="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto mb-3 text-blue-500 group-hover:scale-110 group-hover:text-blue-600 transition-transform">
-                      <i class="fa-solid fa-file-arrow-up text-xl"></i>
+                  <div onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-slate-300 hover:border-blue-400 bg-slate-50 hover:bg-blue-50/50 p-6 text-center rounded-xl cursor-pointer transition group">
+                    <div class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto mb-2 text-blue-500 group-hover:scale-110 group-hover:text-blue-600 transition-transform">
+                      <i class="fa-solid fa-file-arrow-up text-lg"></i>
                     </div>
                     <p class="font-bold text-slate-700">คลิกที่นี่เพื่อเลือกไฟล์</p>
-                    <p class="text-[10px] text-slate-400 mt-1">รองรับไฟล์ PDF, รูปภาพ, เอกสาร ฯลฯ</p>
                     <input type="file" id="fileInput" multiple onchange="handleFileSelect(event)" class="hidden">
                   </div>
-                  <div id="fileQueueContainer" class="hidden mt-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                    <p class="text-[10px] font-bold text-slate-500 mb-2 uppercase tracking-wide">ไฟล์ที่รออัปโหลด</p>
-                    <div id="fileQueueList" class="space-y-1.5 max-h-32 overflow-y-auto pr-1"></div>
+                  <div id="fileQueueContainer" class="hidden mt-2 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                    <div id="fileQueueList" class="space-y-1.5 max-h-24 overflow-y-auto pr-1"></div>
                   </div>
                 </div>
 
@@ -216,60 +174,158 @@
                 </div>
               </form>
             </div>
-            
-            <!-- Logs -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-              <div class="flex items-center gap-2 mb-4">
-                <i class="fa-solid fa-bolt text-amber-500"></i>
-                <h3 class="text-sm font-bold text-slate-800">ความเคลื่อนไหวล่าสุด</h3>
-              </div>
-              <div id="activityFeed" class="space-y-3 max-h-64 overflow-y-auto text-xs pr-2"></div>
-            </div>
-            
           </div>
         </div>
       </div>
 
       <!-- ================= TAB 2: STUDY ================= -->
       <div id="tabStudy" class="hidden space-y-8 animate-fade-in">
-        <div class="bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 text-white p-8 sm:p-10 rounded-[2rem] shadow-xl shadow-purple-900/20 relative overflow-hidden flex justify-between items-center">
-           <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        <div class="bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 text-white p-8 sm:p-10 rounded-[2rem] shadow-xl shadow-purple-900/20 relative overflow-hidden flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+           <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
            <div class="relative z-10 space-y-2">
              <span class="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-bold tracking-wider uppercase border border-white/20 shadow-sm">Productivity Mode</span>
              <h2 class="text-3xl font-black flex items-center gap-3">
                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/30"><i class="fa-solid fa-graduation-cap"></i></div> 
                โหมดเตรียมสอบ
              </h2>
-             <p class="text-purple-100 text-sm mt-1">จัดการสิ่งที่ต้องทำและทบทวนความรู้ด้วยแฟลชการ์ด</p>
+             <p class="text-purple-100 text-sm mt-1">คลังข้อสอบ สรุปเนื้อหา แฟลชการ์ด และตารางอ่านหนังสือ</p>
+           </div>
+           <div class="relative z-10 flex gap-2">
+             <select id="studySubjectFilter" onchange="filterStudyData()" class="px-4 py-2 bg-white/20 backdrop-blur-md border border-white/30 rounded-xl text-white outline-none focus:bg-white/30 font-semibold text-sm cursor-pointer shadow-sm">
+                <option value="" class="text-slate-800">เลือกวิชาทั้งหมด</option>
+             </select>
            </div>
         </div>
         
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-          <!-- Tasks -->
-          <div class="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-5">
-            <h3 class="font-bold text-lg flex items-center gap-3 text-slate-800">
-              <div class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600"><i class="fa-solid fa-list-check"></i></div> 
-              เช็คลิสต์สิ่งที่ต้องทำ
-            </h3>
-            <div class="flex gap-2">
-              <input type="text" id="newTaskInput" placeholder="เพิ่มงานใหม่ที่ต้องจัดการ..." class="flex-1 px-4 py-2.5 text-xs font-medium bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 outline-none transition">
-              <button onclick="uiAddTask()" class="px-5 font-bold bg-emerald-500 hover:bg-emerald-600 text-white text-xs rounded-xl shadow-md shadow-emerald-500/20 transition">เพิ่มงาน</button>
-            </div>
-            <div id="tasksListContainer" class="space-y-2 text-xs mt-4"></div>
-          </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
-          <!-- Flashcards -->
-          <div class="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-5">
-            <div class="flex justify-between items-center">
-              <h3 class="font-bold text-lg flex items-center gap-3 text-slate-800">
-                <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-500"><i class="fa-solid fa-layer-group"></i></div> 
-                ทบทวนแฟลชการ์ด
-              </h3>
-              <button onclick="uiShowAddFlashcard()" class="text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-600 px-4 py-2 rounded-xl border border-amber-200 transition">สร้างการ์ดใหม่</button>
+          <!-- Files (Summary & Exams) -->
+          <div class="lg:col-span-8 space-y-6">
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
+              <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-lg flex items-center gap-3 text-slate-800">
+                  <div class="w-8 h-8 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center shadow-inner"><i class="fa-solid fa-book-open"></i></div> 
+                  เอกสารประกอบการสอบ
+                </h3>
+                <div class="flex gap-2">
+                  <select id="studyTypeFilter" onchange="filterStudyData()" class="px-3 py-1.5 text-xs font-bold text-slate-600 bg-slate-100 rounded-lg outline-none cursor-pointer">
+                    <option value="">ทุกประเภท</option>
+                    <option value="สรุป">สรุปเนื้อหา</option>
+                    <option value="ข้อสอบ">แนวข้อสอบ</option>
+                    <option value="แบบฝึกหัด">แบบฝึกหัด</option>
+                  </select>
+                </div>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left whitespace-nowrap">
+                  <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+                    <tr>
+                      <th class="py-3 px-2 font-bold">ชื่อเรื่อง</th>
+                      <th class="py-3 px-2 font-bold">ประเภท</th>
+                      <th class="py-3 px-2 font-bold">ผู้อัปโหลด</th>
+                      <th class="py-3 px-2 font-bold text-right">เปิด</th>
+                    </tr>
+                  </thead>
+                  <tbody id="studyDocTableBody" class="divide-y divide-slate-100">
+                    <tr><td colspan="4" class="py-8 text-center text-slate-400 text-sm">กำลังโหลดเอกสาร...</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
-              <p class="text-xs text-slate-500 font-medium mb-3 text-center"><i class="fa-regular fa-lightbulb text-amber-400 mr-1"></i> คลิกที่การ์ดเพื่อพลิกดูคำตอบด้านหลัง</p>
-              <div id="flashcardsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+
+            <!-- Flashcards -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
+              <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-lg flex items-center gap-3 text-slate-800">
+                  <div class="w-8 h-8 rounded-lg bg-fuchsia-100 text-fuchsia-600 flex items-center justify-center shadow-inner"><i class="fa-solid fa-layer-group"></i></div> 
+                  แฟลชการ์ดทบทวน
+                </h3>
+                <button onclick="openFlashcardModal()" class="px-4 py-2 bg-slate-800 text-white text-xs font-bold rounded-xl shadow-md hover:bg-slate-700 transition">สร้างแฟลชการ์ด <i class="fa-solid fa-plus ml-1"></i></button>
+              </div>
+              
+              <div id="flashcardGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 perspective-1000">
+                <!-- Flashcards inject here -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Tasks Sidebar -->
+          <div class="lg:col-span-4">
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm sticky top-24">
+              <h3 class="font-bold text-lg flex items-center gap-3 text-slate-800 mb-6">
+                <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center shadow-inner"><i class="fa-solid fa-list-check"></i></div> 
+                สิ่งที่ต้องทำ (To-Do)
+              </h3>
+              
+              <div class="mb-5 flex gap-2">
+                <input type="text" id="newTaskDetail" placeholder="พิมพ์สิ่งที่จะทำ..." class="flex-1 px-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-purple-400 outline-none transition">
+                <button onclick="handleAddTask()" class="px-4 bg-purple-600 text-white rounded-xl shadow-md hover:bg-purple-700 transition"><i class="fa-solid fa-plus"></i></button>
+              </div>
+              
+              <div id="taskList" class="space-y-3 max-h-96 overflow-y-auto pr-2">
+                <!-- Tasks inject here -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ================= TAB 3: ADMIN DASHBOARD ================= -->
+      <div id="tabDashboard" class="hidden space-y-8 animate-fade-in">
+        <div class="bg-slate-900 text-white p-8 rounded-[2rem] shadow-xl relative overflow-hidden flex justify-between items-center">
+           <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+           <div class="relative z-10">
+             <h2 class="text-3xl font-black flex items-center gap-3">
+               <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center border border-white/20"><i class="fa-solid fa-chart-pie"></i></div> 
+               Admin Dashboard
+             </h2>
+             <p class="text-slate-400 text-sm mt-2">ศูนย์กลางควบคุมระบบและดูสถิติทั้งหมด</p>
+           </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-2xl shadow-inner"><i class="fa-solid fa-file-lines"></i></div>
+            <div>
+              <p class="text-xs font-bold text-slate-400 uppercase">เอกสารทั้งหมด</p>
+              <p class="text-3xl font-black text-slate-800" id="statTotalDocs">0</p>
+            </div>
+          </div>
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div class="w-14 h-14 bg-fuchsia-50 text-fuchsia-600 rounded-full flex items-center justify-center text-2xl shadow-inner"><i class="fa-solid fa-layer-group"></i></div>
+            <div>
+              <p class="text-xs font-bold text-slate-400 uppercase">แฟลชการ์ดทั้งหมด</p>
+              <p class="text-3xl font-black text-slate-800" id="statTotalFC">0</p>
+            </div>
+          </div>
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-2xl shadow-inner"><i class="fa-solid fa-book"></i></div>
+            <div>
+              <p class="text-xs font-bold text-slate-400 uppercase">วิชาทั้งหมด</p>
+              <p class="text-3xl font-black text-slate-800" id="statTotalSubj">0</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-base font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-bolt text-amber-500"></i> ประวัติการทำรายการ (Logs)</h3>
+              <button onclick="fetchLogs()" class="text-xs font-bold text-blue-500 hover:text-blue-700"><i class="fa-solid fa-rotate"></i> รีเฟรช</button>
+            </div>
+            <div id="activityFeedAdmin" class="space-y-3 max-h-[400px] overflow-y-auto text-sm pr-2 bg-slate-50 p-4 rounded-xl border border-slate-100">
+              <p class="text-center text-slate-400">กำลังโหลด...</p>
+            </div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <h3 class="text-base font-bold text-slate-800 flex items-center gap-2 mb-4"><i class="fa-solid fa-gear text-slate-500"></i> จัดการหมวดหมู่วิชา</h3>
+            <div class="flex gap-2 mb-6">
+              <input type="text" id="newSubjectName" placeholder="ชื่อวิชาใหม่..." class="flex-1 px-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-400 outline-none">
+              <button onclick="handleAddSubject()" class="px-5 bg-slate-800 text-white text-sm font-bold rounded-xl shadow-md hover:bg-slate-700 transition">เพิ่มวิชา</button>
+            </div>
+            <p class="text-xs font-bold text-slate-400 mb-2 uppercase">วิชาที่มีในระบบ</p>
+            <div id="adminSubjectList" class="flex flex-wrap gap-2">
             </div>
           </div>
         </div>
@@ -280,47 +336,75 @@
   
   <!-- Custom Login Modal -->
   <div id="loginModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeLoginModal()"></div>
-    <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-md relative z-10 overflow-hidden transform transition-all duration-300 scale-95 opacity-0" id="loginModalContent">
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity" onclick="closeLoginModal()"></div>
+    <div class="bg-white/80 backdrop-blur-xl border border-white rounded-[2rem] shadow-2xl w-full max-w-md relative z-10 overflow-hidden transform transition-all duration-300 scale-95 opacity-0" id="loginModalContent">
       <div class="h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600"></div>
-      <div class="p-8">
-        <button onclick="closeLoginModal()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+      <div class="p-8 relative">
+        <button onclick="closeLoginModal()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-700 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
         <div class="text-center mb-8 mt-2">
-          <div class="w-20 h-20 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-5 text-blue-600 text-3xl shadow-inner border border-blue-100 transform rotate-3">
+          <div class="w-20 h-20 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-5 text-blue-600 text-3xl shadow-inner border border-blue-200 transform rotate-3">
             <i class="fa-solid fa-shield-halved -rotate-3"></i>
           </div>
-          <h2 class="text-2xl font-black text-slate-800 tracking-tight">เข้าสู่ระบบ (Admin)</h2>
-          <p class="text-xs text-slate-500 mt-2 font-medium">กรุณาเข้าสู่ระบบเพื่อจัดการเอกสารและผู้ใช้งาน</p>
+          <h2 class="text-2xl font-black text-slate-800 tracking-tight">เข้าสู่ระบบจัดการ</h2>
+          <p class="text-xs text-slate-500 mt-2 font-medium">เฉพาะผู้ดูแลระบบหรือผู้ใช้ที่ได้รับอนุญาต</p>
         </div>
         <div class="space-y-5">
           <div>
             <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">ชื่อผู้ใช้งาน</label>
             <div class="relative group">
               <i class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition"></i>
-              <input type="text" id="loginUsername" placeholder="Username" class="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-100 outline-none transition font-medium text-sm">
+              <input type="text" id="loginUsername" placeholder="Username" class="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl focus:border-blue-400 focus:ring-4 focus:ring-blue-100 outline-none transition font-medium text-sm shadow-sm">
             </div>
           </div>
           <div>
             <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">รหัสผ่าน</label>
             <div class="relative group">
               <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition"></i>
-              <input type="password" id="loginPassword" placeholder="Password" class="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-100 outline-none transition font-medium text-sm">
+              <input type="password" id="loginPassword" placeholder="Password" class="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl focus:border-blue-400 focus:ring-4 focus:ring-blue-100 outline-none transition font-medium text-sm shadow-sm">
             </div>
           </div>
           <button onclick="submitLogin()" id="loginSubmitBtn" class="w-full mt-4 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm">
-            ยืนยันการเข้าสู่ระบบ <i class="fa-solid fa-arrow-right-to-bracket"></i>
+            เข้าสู่ระบบ <i class="fa-solid fa-arrow-right-to-bracket"></i>
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <style>
-    .animate-fade-in { animation: fadeIn 0.4s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  </style>
+  <!-- Flashcard Modal -->
+  <div id="flashcardModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeFlashcardModal()"></div>
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg relative z-10 overflow-hidden transform transition-all duration-300 scale-95 opacity-0" id="fcModalContent">
+      <div class="p-6 sm:p-8">
+        <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+          <i class="fa-solid fa-layer-group text-fuchsia-500"></i> สร้างแฟลชการ์ดใหม่
+        </h2>
+        <div class="space-y-4 text-sm font-medium">
+          <div>
+            <label class="block text-slate-700 mb-1.5 text-xs">วิชา <span class="text-red-500">*</span></label>
+            <select id="fcSubject" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white outline-none cursor-pointer"></select>
+          </div>
+          <div>
+            <label class="block text-slate-700 mb-1.5 text-xs">คำถาม / หัวข้อ (ด้านหน้า) <span class="text-red-500">*</span></label>
+            <textarea id="fcQuestion" rows="2" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white outline-none resize-none"></textarea>
+          </div>
+          <div>
+            <label class="block text-slate-700 mb-1.5 text-xs">คำตอบ / คำอธิบาย (ด้านหลัง) <span class="text-red-500">*</span></label>
+            <textarea id="fcAnswer" rows="3" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white outline-none resize-none"></textarea>
+          </div>
+          <div>
+            <label class="block text-slate-700 mb-1.5 text-xs">แนบรูปภาพ (ด้านหลัง) <span class="text-slate-400 font-normal">(ทางเลือก)</span></label>
+            <input type="file" id="fcImage" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-fuchsia-50 file:text-fuchsia-700 hover:file:bg-fuchsia-100 transition cursor-pointer">
+          </div>
+          <div class="pt-4 flex gap-3">
+            <button onclick="closeFlashcardModal()" class="flex-1 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition">ยกเลิก</button>
+            <button onclick="submitFlashcard()" id="fcSubmitBtn" class="flex-1 py-2.5 bg-fuchsia-600 text-white font-bold rounded-xl shadow-md hover:bg-fuchsia-700 transition">บันทึกแฟลชการ์ด</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <!-- สคริปต์การทำงานของระบบ -->
   <script src="assets/js/app.js"></script>
 </body>
 </html>
