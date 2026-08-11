@@ -152,15 +152,28 @@ function filterStudyData() {
       </tr>
     `).join('');
   }
+  
+  // อัปเดตแฟลชการ์ดและรายการสิ่งที่ต้องทำตามวิชาที่เลือกด้วย
+  renderFlashcards();
+  renderTasks();
 }
 
 function renderFlashcards() {
   const subj = document.getElementById('studySubjectFilter').value;
-  const fcs = appState.flashcards.filter(f => subj ? f.subject === subj : true);
-  
   const grid = document.getElementById('flashcardGrid');
+  
+  if (!subj) {
+    grid.innerHTML = `<div class="col-span-full py-12 flex flex-col items-center text-slate-400">
+      <i class="fa-solid fa-layer-group text-4xl mb-3 text-slate-300"></i>
+      <p class="text-sm font-medium">โปรดเลือกวิชาด้านบนเพื่อเริ่มทบทวนแฟลชการ์ด</p>
+    </div>`;
+    return;
+  }
+  
+  const fcs = appState.flashcards.filter(f => f.subject.toLowerCase() === subj.toLowerCase());
+  
   if(fcs.length === 0) {
-    grid.innerHTML = `<div class="col-span-full py-8 text-center text-slate-400 text-xs font-medium">ยังไม่มีแฟลชการ์ดในหมวดนี้</div>`;
+    grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 text-xs font-medium border-2 border-dashed border-slate-200 rounded-2xl">ยังไม่มีแฟลชการ์ดในวิชา ${subj}</div>`;
     return;
   }
   
@@ -204,7 +217,7 @@ function renderTasks() {
   const list = document.getElementById('taskList');
   
   let myTasks = appState.tasks.filter(t => t.username === (appState.username || 'guest'));
-  if(subj) myTasks = myTasks.filter(t => t.subject === subj);
+  if(subj) myTasks = myTasks.filter(t => t.subject.toLowerCase() === subj.toLowerCase());
   
   if(myTasks.length === 0) {
     list.innerHTML = `<p class="text-center text-slate-400 text-xs py-4">ไม่มีรายการที่ต้องทำ</p>`;
