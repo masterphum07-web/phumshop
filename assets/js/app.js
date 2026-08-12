@@ -40,7 +40,7 @@ function fetchInitialData() {
 function refreshData() {
   document.getElementById('docTableBody').innerHTML = '<tr><td colspan="5" class="py-12 text-center text-slate-400 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังโหลดข้อมูล...</td></tr>';
   
-  fetchInitialData().then(res => {
+  return fetchInitialData().then(res => {
     if(res.success) {
       appState.documents = res.documents.reverse();
       appState.categories = res.categories;
@@ -74,9 +74,15 @@ function refreshData() {
 function updateCategoryDropdowns() {
   const cats = appState.categories.filter(c => c.name.trim() !== '').map(c => `<option value="${c.name}">${c.name}</option>`).join('');
   document.getElementById('categoryFilter').innerHTML = '<option value="">ทุกวิชา</option>' + cats;
-  
-  const datalist = document.getElementById('docCategoryList');
-  if(datalist) datalist.innerHTML = cats;
+
+  const docCategorySelect = document.getElementById('docCategorySelect');
+  if (docCategorySelect) {
+    const currentValue = docCategorySelect.value;
+    docCategorySelect.innerHTML = '<option value="">เลือกวิชา</option>' + cats;
+    if ([...docCategorySelect.options].some(option => option.value === currentValue)) {
+      docCategorySelect.value = currentValue;
+    }
+  }
   
   const catsForStudy = appState.categories.filter(c => c.name.trim() !== '').map(c => `<option value="${c.name}" class="text-slate-800">${c.name}</option>`).join('');
   document.getElementById('studySubjectFilter').innerHTML = '<option value="" class="text-slate-800">เลือกวิชาทั้งหมด</option>' + catsForStudy;
@@ -697,5 +703,46 @@ if (fcContainer) {
     } else if (touchEndX - touchStartX > 50) {
       prevFc(); // Swipe right -> Prev
     }
+  });
+}
+
+// ---------------------------------------------------
+// Subject Manager UI (For all users)
+// ---------------------------------------------------
+function openSubjectManager() {
+  document.getElementById('subjectManagerModal').classList.remove('hidden');
+  renderSubjectManagerList();
+}
+
+function renderSubjectManagerList() {
+  const list = document.getElementById('subjectManagerList');
+  if (appState.categories.length === 0) {
+    list.innerHTML = `<p class="text-xs text-slate-400">ยังไม่มีวิชา</p>`;
+    return;
+  }
+  
+  list.innerHTML = appState.categories.filter(c => c.name.trim() !== '').map(c => `
+    <div class="flex justify-between items-center bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-sm hover:shadow-md transition">
+      <span class="text-sm font-bold text-slate-700">${c.name}</span>
+      <button onclick="handleDeleteSubject('${c.name}')" class="w-8 h-8 flex justify-center items-center rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition" title="ลบวิชา"><i class="fa-solid fa-trash-can text-sm"></i></button>
+    </div>
+  `).join('');
+}
+
+function handleAddSubjectUI() {
+  const name = document.getElementById('newSubjectNameUI').value;
+  if(!name) return;
+  
+  fetch(API_URL + `?action=addNewCategory&subjectName=${encodeURIComponent(name)}&username=${appState.username || 'guest'}`).then(() => {
+    document.getElementById('newSubjectNameUI').value = '';
+    refreshData().then(() => renderSubjectManagerList());
+  });
+}
+
+function handleDeleteSubject(name) {
+  if(!confirm(`คุณต้องการลบวิชา "${name}" ใช่หรือไม่?\n\n(วิชานี้จะถูกลบออกจากตัวเลือก แต่เอกสารเดิมจะไม่หายไป)`)) return;
+  
+  fetch(API_URL + `?action=deleteCategory&subjectName=${encodeURIComponent(name)}&username=${appState.username || 'guest'}`).then(() => {
+    refreshData().then(() => renderSubjectManagerList());
   });
 }
