@@ -662,9 +662,16 @@ function applySiteSettings(settings) {
   document.documentElement.style.setProperty('--site-accent', settings.accent_color || '#9333ea');
   document.body.style.backgroundColor = settings.background_color || '#f8fafc';
   const banner = document.getElementById('bannerTitle')?.closest('.bg-white');
-  if (banner) banner.style.display = settings.show_banner === 'false' ? 'none' : '';
+  if (banner) {
+    banner.style.display = settings.show_banner === 'false' ? 'none' : '';
+    const stripe = banner.querySelector('.absolute.top-0');
+    if (stripe) stripe.style.background = `linear-gradient(90deg, ${settings.primary_color || '#2563eb'}, ${settings.accent_color || '#9333ea'})`;
+  }
   const icon = document.querySelector('#navTitle')?.previousElementSibling?.querySelector('i');
-  if (icon && settings.site_icon) icon.className = `fa-solid ${settings.site_icon} text-lg`;
+  if (icon && settings.site_icon) {
+    icon.className = `fa-solid ${settings.site_icon} text-lg`;
+    icon.parentElement.style.background = `linear-gradient(135deg, ${settings.primary_color || '#2563eb'}, ${settings.accent_color || '#9333ea'})`;
+  }
 }
 
 // ---------------------------------------------------
