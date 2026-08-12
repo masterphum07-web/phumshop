@@ -50,10 +50,17 @@ function refreshData() {
       document.getElementById('bannerTitle').innerText = res.settings.header_title;
       document.getElementById('navTitle').innerText = res.settings.header_title;
       document.getElementById('bannerSubtitle').innerText = res.settings.cta_text;
+      applySiteSettings(res.settings);
       
       if(document.getElementById('settingBannerTitle')) {
         document.getElementById('settingBannerTitle').value = res.settings.header_title;
         document.getElementById('settingBannerSubtitle').value = res.settings.cta_text;
+        document.getElementById('settingPrimaryColor').value = res.settings.primary_color || '#2563eb';
+        document.getElementById('settingAccentColor').value = res.settings.accent_color || '#9333ea';
+        document.getElementById('settingBackgroundColor').value = res.settings.background_color || '#f8fafc';
+        document.getElementById('settingBannerButtonText').value = res.settings.banner_button_text || 'เริ่มต้นใช้งาน';
+        document.getElementById('settingShowBanner').checked = res.settings.show_banner !== 'false';
+        document.getElementById('settingSiteIcon').value = res.settings.site_icon || 'fa-layer-group';
       }
       
       updateCategoryDropdowns();
@@ -627,7 +634,15 @@ function saveSettings() {
   const payload = {
     action: 'updateSettings',
     username: appState.username || 'admin',
-    settings: { bannerTitle: t, bannerSubtitle: s }
+    settings: {
+      bannerTitle: t, bannerSubtitle: s,
+      primaryColor: document.getElementById('settingPrimaryColor').value,
+      accentColor: document.getElementById('settingAccentColor').value,
+      backgroundColor: document.getElementById('settingBackgroundColor').value,
+      bannerButtonText: document.getElementById('settingBannerButtonText').value,
+      showBanner: document.getElementById('settingShowBanner').checked ? 'true' : 'false',
+      siteIcon: document.getElementById('settingSiteIcon').value
+    }
   };
   
   fetch(API_URL, {
@@ -640,6 +655,16 @@ function saveSettings() {
     Swal.fire('สำเร็จ', 'บันทึกการตั้งค่าหน้าเว็บเรียบร้อย', 'success');
     refreshData();
   });
+}
+
+function applySiteSettings(settings) {
+  document.documentElement.style.setProperty('--site-primary', settings.primary_color || '#2563eb');
+  document.documentElement.style.setProperty('--site-accent', settings.accent_color || '#9333ea');
+  document.body.style.backgroundColor = settings.background_color || '#f8fafc';
+  const banner = document.getElementById('bannerTitle')?.closest('.bg-white');
+  if (banner) banner.style.display = settings.show_banner === 'false' ? 'none' : '';
+  const icon = document.querySelector('#navTitle')?.previousElementSibling?.querySelector('i');
+  if (icon && settings.site_icon) icon.className = `fa-solid ${settings.site_icon} text-lg`;
 }
 
 // ---------------------------------------------------

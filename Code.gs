@@ -75,7 +75,11 @@ function getInitialData() {
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     
     // 1. ดึงข้อมูล Settings
-    let settings = { bannerTitle: "DOC HUB", bannerSubtitle: "ระบบจัดเก็บเอกสารและสำรองข้อมูล" };
+    let settings = {
+      bannerTitle: "DOC HUB", bannerSubtitle: "ระบบจัดเก็บเอกสารและสำรองข้อมูล",
+      primaryColor: "#2563eb", accentColor: "#9333ea", backgroundColor: "#f8fafc",
+      bannerButtonText: "เริ่มต้นใช้งาน", showBanner: "true", siteIcon: "fa-layer-group"
+    };
     const settingsSheet = ss.getSheetByName("Settings");
     if(settingsSheet) {
       const data = settingsSheet.getDataRange().getDisplayValues();
@@ -152,7 +156,12 @@ function getInitialData() {
       }
     }
 
-    return { success: true, settings: { header_title: settings.bannerTitle, cta_text: settings.bannerSubtitle }, categories: categories, documents: documents, tasks: tasks, flashcards: flashcards };
+    return { success: true, settings: {
+      header_title: settings.bannerTitle, cta_text: settings.bannerSubtitle,
+      primary_color: settings.primaryColor, accent_color: settings.accentColor,
+      background_color: settings.backgroundColor, banner_button_text: settings.bannerButtonText,
+      show_banner: settings.showBanner, site_icon: settings.siteIcon
+    }, categories: categories, documents: documents, tasks: tasks, flashcards: flashcards };
   } catch (e) {
     return { success: false, error: e.toString() };
   }
