@@ -646,6 +646,13 @@ function saveSettings() {
 // Iframe Modal Logic
 // ---------------------------------------------------
 function openIframeModal(url, title) {
+  // เว็บไซต์ภายนอก เช่น AI Studio/ChatGPT มักบล็อกการแสดงผลใน iframe
+  // จึงเปิดแท็บใหม่โดยตรงแทน เพื่อไม่ให้ผู้ใช้เห็นหน้าว่างหรือไฟล์เสีย
+  if (isExternalPageUrl(url)) {
+    window.open(url, '_blank', 'noopener,noreferrer');
+    return;
+  }
+
   let finalUrl = url;
   if (url.includes('drive.google.com/file/d/')) {
     finalUrl = url.replace('/view', '/preview');
@@ -663,6 +670,18 @@ function openIframeModal(url, title) {
   setTimeout(() => {
     document.getElementById('iframeModalContent').classList.remove('scale-95', 'opacity-0');
   }, 10);
+}
+
+function isExternalPageUrl(url) {
+  try {
+    const parsed = new URL(url, window.location.href);
+    const path = parsed.pathname.toLowerCase();
+    const isDocumentFile = /\.(pdf|png|jpe?g|gif|webp|svg|mp4|webm|mp3|wav)(\?.*)?$/.test(path);
+    const isGoogleDriveFile = parsed.hostname.includes('drive.google.com') && path.includes('/file/d/');
+    return !isDocumentFile && !isGoogleDriveFile;
+  } catch (error) {
+    return true;
+  }
 }
 
 function closeIframeModal() {
