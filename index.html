@@ -320,13 +320,17 @@
            </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
           <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
             <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-2xl shadow-inner"><i class="fa-solid fa-file-lines"></i></div>
             <div>
               <p class="text-xs font-bold text-slate-400 uppercase">เอกสารทั้งหมด</p>
               <p class="text-3xl font-black text-slate-800" id="statTotalDocs">0</p>
             </div>
+          </div>
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div class="w-14 h-14 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center text-2xl shadow-inner"><i class="fa-solid fa-list-check"></i></div>
+            <div><p class="text-xs font-bold text-slate-400 uppercase">งานทั้งหมด</p><p class="text-3xl font-black text-slate-800" id="statTotalTasks">0</p></div>
           </div>
           <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
             <div class="w-14 h-14 bg-fuchsia-50 text-fuchsia-600 rounded-full flex items-center justify-center text-2xl shadow-inner"><i class="fa-solid fa-layer-group"></i></div>
@@ -341,6 +345,23 @@
               <p class="text-xs font-bold text-slate-400 uppercase">วิชาทั้งหมด</p>
               <p class="text-3xl font-black text-slate-800" id="statTotalSubj">0</p>
             </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <div class="lg:col-span-3 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-5">
+              <div><h3 class="text-base font-black text-slate-800">เอกสารแยกตามวิชา</h3><p class="text-xs text-slate-400 mt-1">ภาพรวมคลังเอกสารแต่ละวิชา</p></div>
+              <i class="fa-solid fa-chart-column text-indigo-400 text-xl"></i>
+            </div>
+            <div id="documentsBySubjectChart" class="space-y-4"></div>
+          </div>
+          <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-5">
+              <div><h3 class="text-base font-black text-slate-800">ประเภทเนื้อหา</h3><p class="text-xs text-slate-400 mt-1">สัดส่วนเอกสารในระบบ</p></div>
+              <i class="fa-solid fa-chart-pie text-fuchsia-400 text-xl"></i>
+            </div>
+            <div id="documentsByTypeChart" class="space-y-4"></div>
           </div>
         </div>
 

@@ -596,7 +596,28 @@ function updateDashboardStats() {
   document.getElementById('statTotalDocs').innerText = appState.documents.length;
   document.getElementById('statTotalFC').innerText = appState.flashcards.length;
   document.getElementById('statTotalSubj').innerText = appState.categories.length;
+  document.getElementById('statTotalTasks').innerText = appState.tasks.length;
+  renderDashboardCharts();
   fetchLogs();
+}
+
+function renderDashboardCharts() {
+  const subjectCounts = {};
+  appState.documents.forEach(doc => { const key = doc.category || 'ทั่วไป'; subjectCounts[key] = (subjectCounts[key] || 0) + 1; });
+  const subjectEntries = Object.entries(subjectCounts).sort((a, b) => b[1] - a[1]);
+  const maxSubject = Math.max(...subjectEntries.map(item => item[1]), 1);
+  const subjectChart = document.getElementById('documentsBySubjectChart');
+  if (subjectChart) subjectChart.innerHTML = subjectEntries.length ? subjectEntries.slice(0, 8).map(([name, count]) => `
+    <div class="group"><div class="flex justify-between text-xs font-bold mb-1.5"><span class="text-slate-600 truncate pr-3">${name}</span><span class="text-indigo-600">${count}</span></div>
+      <div class="h-2.5 rounded-full bg-slate-100 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-700 group-hover:from-indigo-500 group-hover:to-fuchsia-500" style="width:${Math.max(8, count / maxSubject * 100)}%"></div></div></div>`).join('') : '<p class="text-sm text-slate-400 text-center py-8">ยังไม่มีข้อมูลเอกสาร</p>';
+
+  const typeCounts = {};
+  appState.documents.forEach(doc => { const key = doc.docType || 'ทั่วไป'; typeCounts[key] = (typeCounts[key] || 0) + 1; });
+  const colors = ['bg-blue-500', 'bg-fuchsia-500', 'bg-amber-500', 'bg-emerald-500', 'bg-slate-400'];
+  const total = Math.max(appState.documents.length, 1);
+  const typeChart = document.getElementById('documentsByTypeChart');
+  if (typeChart) typeChart.innerHTML = Object.entries(typeCounts).sort((a,b) => b[1]-a[1]).map(([name, count], index) => `
+    <div class="flex items-center gap-3"><span class="w-3 h-3 rounded-full ${colors[index % colors.length]}"></span><span class="flex-1 text-sm font-bold text-slate-600">${name}</span><span class="text-sm font-black text-slate-800">${count}</span><span class="text-[10px] font-bold text-slate-400 w-10 text-right">${Math.round(count / total * 100)}%</span></div>`).join('') || '<p class="text-sm text-slate-400 text-center py-8">ยังไม่มีข้อมูล</p>';
 }
 
 function fetchLogs() {
