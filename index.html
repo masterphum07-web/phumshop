@@ -1,13 +1,40 @@
 <!DOCTYPE html>
 <html lang="th">
-<head>
+  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DOC HUB - ระบบคลังเอกสาร</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root { --ui-primary: #2563eb; --ui-accent: #9333ea; }
+      * { scrollbar-width: thin; scrollbar-color: #a5b4fc #eef2ff; }
+      body { transition: background-color .35s ease, color .35s ease; }
+      button, a, select, input, textarea { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease, background-color .2s ease; }
+      button:hover:not(:disabled), a:hover { transform: translateY(-2px); }
+      button:active:not(:disabled), a:active { transform: translateY(0) scale(.98); }
+      nav { box-shadow: 0 8px 30px rgba(30, 41, 59, .06); }
+      nav button:hover { box-shadow: 0 6px 16px rgba(37, 99, 235, .12); }
+      #tabMain > div:first-child { box-shadow: 0 18px 45px rgba(99, 102, 241, .08); }
+      #tabMain > div:first-child::after { content: ''; position: absolute; inset: 20% 25%; background: radial-gradient(circle, rgba(129,140,248,.11), transparent 65%); pointer-events: none; }
+      #tabMain > div:nth-child(2) > div,
+      #tabStudy > div, #tabDashboard > div { box-shadow: 0 12px 30px rgba(15, 23, 42, .045); }
+      #tabMain > div:nth-child(2) > div:hover,
+      #tabStudy > div:hover, #tabDashboard > div:hover { box-shadow: 0 18px 38px rgba(79, 70, 229, .11); border-color: #c7d2fe; }
+      #docTableBody tr { transition: background-color .2s ease, transform .2s ease, box-shadow .2s ease; }
+      #docTableBody tr:hover { background: linear-gradient(90deg, #f8faff, #eef4ff); box-shadow: inset 4px 0 0 #6366f1; }
+      #docTableBody tr:hover td:first-child { transform: translateX(4px); }
+      #docTableBody td { transition: transform .2s ease; }
+      #uploadForm input:focus, #uploadForm select:focus, #uploadForm textarea:focus,
+      #searchInput:focus, #categoryFilter:focus { box-shadow: 0 0 0 4px rgba(99, 102, 241, .12), 0 8px 18px rgba(15, 23, 42, .05); }
+      .bg-blue-50:hover, .bg-blue-100:hover { box-shadow: 0 8px 18px rgba(37, 99, 235, .16); }
+      .rounded-3xl, .rounded-2xl { transition: box-shadow .25s ease, border-color .25s ease; }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+      }
+    </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link rel="stylesheet" href="assets/css/style.css">
