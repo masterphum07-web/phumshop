@@ -34,47 +34,59 @@ function callAPI(action, payload = {}) {
 // However, the original prompt asked to just use fetch. We'll use GET for reading data to bypass CORS easily if POST fails, or assume the user deployed it with CORS allowed.
 // Let's use GET for fetch Initial Data to avoid CORS preflight issues.
 function fetchInitialData() {
-  return fetch(API_URL + "?action=getInitialData").then(r => r.json());
+  return fetchWithTimeout(API_URL + "?action=getInitialData", 12000).then(r => r.json());
+}
+
+function fetchWithTimeout(url, timeoutMs = 12000, options = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
+}
+
+function getCachedData() {
+  try { return JSON.parse(localStorage.getItem('docHubInitialData') || 'null'); } catch (e) { return null; }
+}
+
+function cacheData(data) {
+  try { localStorage.setItem('docHubInitialData', JSON.stringify(data)); } catch (e) { /* storage may be unavailable */ }
+}
+
+function applyInitialData(res) {
+  appState.documents = [...(res.documents || [])].reverse();
+  appState.categories = res.categories || [];
+  appState.tasks = [...(res.tasks || [])].reverse();
+  appState.flashcards = [...(res.flashcards || [])].reverse();
+  const settings = res.settings || {};
+  document.getElementById('bannerTitle').innerText = settings.header_title || 'DOC HUB';
+  document.getElementById('navTitle').innerText = settings.header_title || 'DOC HUB';
+  document.getElementById('bannerSubtitle').innerText = settings.cta_text || '';
+  applySiteSettings(settings);
+  if(document.getElementById('settingBannerTitle')) {
+    document.getElementById('settingBannerTitle').value = settings.header_title || '';
+    document.getElementById('settingBannerSubtitle').value = settings.cta_text || '';
+    document.getElementById('settingPrimaryColor').value = settings.primary_color || '#2563eb';
+    document.getElementById('settingAccentColor').value = settings.accent_color || '#9333ea';
+    document.getElementById('settingBackgroundColor').value = settings.background_color || '#f8fafc';
+    document.getElementById('settingBannerButtonText').value = settings.banner_button_text || 'เริ่มต้นใช้งาน';
+    document.getElementById('settingShowBanner').checked = settings.show_banner !== 'false';
+    document.getElementById('settingSiteIcon').value = settings.site_icon || 'fa-layer-group';
+  }
+  updateCategoryDropdowns(); filterDocuments(); filterStudyData(); renderTasks(); renderFlashcards();
+  if(appState.username && appState.role === 'admin') updateDashboardStats();
 }
 
 function refreshData() {
-  document.getElementById('docTableBody').innerHTML = '<tr><td colspan="5" class="py-12 text-center text-slate-400 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังโหลดข้อมูล...</td></tr>';
+  const cached = getCachedData();
+  if (cached?.success) applyInitialData(cached);
+  else document.getElementById('docTableBody').innerHTML = '<tr><td colspan="5" class="py-12 text-center text-slate-400 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังโหลดข้อมูล...</td></tr>';
   
   return fetchInitialData().then(res => {
     if(res.success) {
-      appState.documents = res.documents.reverse();
-      appState.categories = res.categories;
-      appState.tasks = res.tasks.reverse();
-      appState.flashcards = res.flashcards.reverse();
-      
-      document.getElementById('bannerTitle').innerText = res.settings.header_title;
-      document.getElementById('navTitle').innerText = res.settings.header_title;
-      document.getElementById('bannerSubtitle').innerText = res.settings.cta_text;
-      applySiteSettings(res.settings);
-      
-      if(document.getElementById('settingBannerTitle')) {
-        document.getElementById('settingBannerTitle').value = res.settings.header_title;
-        document.getElementById('settingBannerSubtitle').value = res.settings.cta_text;
-        document.getElementById('settingPrimaryColor').value = res.settings.primary_color || '#2563eb';
-        document.getElementById('settingAccentColor').value = res.settings.accent_color || '#9333ea';
-        document.getElementById('settingBackgroundColor').value = res.settings.background_color || '#f8fafc';
-        document.getElementById('settingBannerButtonText').value = res.settings.banner_button_text || 'เริ่มต้นใช้งาน';
-        document.getElementById('settingShowBanner').checked = res.settings.show_banner !== 'false';
-        document.getElementById('settingSiteIcon').value = res.settings.site_icon || 'fa-layer-group';
-      }
-      
-      updateCategoryDropdowns();
-      filterDocuments();
-      filterStudyData();
-      renderTasks();
-      renderFlashcards();
-      
-      if(appState.username && appState.role === 'admin') {
-        updateDashboardStats();
-      }
+      cacheData(res);
+      applyInitialData(res);
     }
   }).catch(e => {
-    document.getElementById('docTableBody').innerHTML = `<tr><td colspan="5" class="py-8 text-center text-red-500">เชื่อมต่อฐานข้อมูลล้มเหลว</td></tr>`;
+    if (!cached?.success) document.getElementById('docTableBody').innerHTML = `<tr><td colspan="5" class="py-8 text-center text-red-500">เชื่อมต่อฐานข้อมูลล้มเหลว</td></tr>`;
   });
 }
 
@@ -567,7 +579,7 @@ function submitLogin() {
   const btn = document.getElementById('loginSubmitBtn');
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
   
-  fetch(API_URL + `?action=verifyLogin&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`)
+  fetchWithTimeout(API_URL + `?action=verifyLogin&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`, 10000)
     .then(r => r.json())
     .then(res => {
       btn.innerHTML = 'เข้าสู่ระบบ <i class="fa-solid fa-arrow-right-to-bracket"></i>';
@@ -581,11 +593,10 @@ function submitLogin() {
         if(res.role === 'admin') {
           document.getElementById('btnTabDashboard').classList.remove('hidden');
           document.getElementById('btnTabDashboardMobile').classList.remove('hidden');
-          updateDashboardStats();
         }
         
         Swal.fire({ icon: 'success', title: 'เข้าสู่ระบบสำเร็จ', text: `ยินดีต้อนรับคุณ ${res.username}`, timer: 1500, showConfirmButton: false });
-        refreshData(); 
+        refreshData();
       } else {
         Swal.fire('ข้อมูลไม่ถูกต้อง', res.message, 'error');
       }
@@ -621,7 +632,7 @@ function renderDashboardCharts() {
 }
 
 function fetchLogs() {
-  fetch(API_URL + "?action=getSystemLogs").then(r => r.json()).then(logs => {
+  fetchWithTimeout(API_URL + "?action=getSystemLogs", 10000).then(r => r.json()).then(logs => {
     const feed = document.getElementById('activityFeedAdmin');
     if(!logs || logs.length === 0) {
       feed.innerHTML = '<p class="text-slate-400 text-center">ไม่มีประวัติการใช้งาน</p>';
@@ -633,6 +644,9 @@ function fetchLogs() {
         <span class="text-slate-700">${l.details}</span>
       </div>
     `).join('');
+  }).catch(() => {
+    const feed = document.getElementById('activityFeedAdmin');
+    if (feed && !feed.dataset.loaded) feed.innerHTML = '<p class="text-slate-400 text-center">โหลดประวัติไม่สำเร็จ</p>';
   });
 }
 
