@@ -1,5 +1,5 @@
 const SPREADSHEET_ID = '1GYPxpPG4PPn_SLeDFz7c4uzyeWGg1s02ST5LlcvUDv8';
-const FOLDER_ID = "1Hz7M113zG2bVGfkPy7ACRgLj5LbBUQAq"; 
+const FOLDER_ID = "1ElnkgyXT3JUU_IBnYLQKdwGAwaYHsD0u"; 
 const SHEET_NAME = "Database"; 
 
 function doGet(e) {
@@ -44,6 +44,8 @@ function handleRequest(data) {
     return verifyLogin(data.username, data.password);
   } else if (action === 'addNewCategory') {
     return addNewCategory(data.subjectName, data.username);
+  } else if (action === 'deleteCategory') {
+    return deleteCategory(data.subjectName, data.username);
   } else if (action === 'uploadFileToDrive') {
     return uploadFileToDrive(data.base64Data, data.filename, data.mimeType, data.category, data.uploader, data.docTitle, data.docType);
   } else if (action === 'uploadDocumentByLink') {
@@ -179,8 +181,33 @@ function addNewCategory(subjectName, username) {
     if(!sheet) { sheet = ss.insertSheet("Subjects"); sheet.appendRow(["ID", "Username", "SubjectName", "ExamDate"]); }
     sheet.appendRow(["SUB_" + Utilities.getUuid().substring(0,8), username || "admin", subjectName, ""]);
     logActivity(`${username || "ผู้ใช้"} เพิ่มวิชาใหม่: ${subjectName}`);
-    return { success: true };
-  } catch(e) { return { success: false, message: e.toString() }; }
+    return ContentService.createTextOutput(JSON.stringify({ success: true })).setMimeType(ContentService.MimeType.JSON);
+  } catch(e) { return ContentService.createTextOutput(JSON.stringify({ success: false, message: e.toString() })).setMimeType(ContentService.MimeType.JSON); }
+}
+
+function deleteCategory(subjectName, username) {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheetByName("Subjects");
+    if (!sheet) return ContentService.createTextOutput(JSON.stringify({ success: false, message: "Sheet Subjects not found" })).setMimeType(ContentService.MimeType.JSON);
+    
+    const data = sheet.getDataRange().getValues();
+    let rowIndex = -1;
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][2]) === subjectName) {
+        rowIndex = i + 1;
+        break;
+      }
+    }
+    
+    if (rowIndex > -1) {
+      sheet.deleteRow(rowIndex);
+      logActivity(`${username || "ผู้ใช้"} ลบวิชา: ${subjectName}`);
+      return ContentService.createTextOutput(JSON.stringify({ success: true })).setMimeType(ContentService.MimeType.JSON);
+    } else {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, message: "ไม่พบวิชาที่ต้องการลบ (อาจถูกลบไปแล้วหรือมาจากเอกสาร)" })).setMimeType(ContentService.MimeType.JSON);
+    }
+  } catch(e) { return ContentService.createTextOutput(JSON.stringify({ success: false, message: e.toString() })).setMimeType(ContentService.MimeType.JSON); }
 }
 
 function uploadFileToDrive(base64Data, filename, mimeType, category, uploader, docTitle, docType) {
