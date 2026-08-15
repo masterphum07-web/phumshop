@@ -75,8 +75,8 @@ function applyInitialData(res) {
   if(appState.username && appState.role === 'admin') updateDashboardStats();
 }
 
-function refreshData() {
-  const cached = getCachedData();
+function refreshData(forceNetwork = false) {
+  const cached = forceNetwork ? null : getCachedData();
   if (cached?.success) applyInitialData(cached);
   else document.getElementById('docTableBody').innerHTML = '<tr><td colspan="5" class="py-12 text-center text-slate-400 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังโหลดข้อมูล...</td></tr>';
   
@@ -414,7 +414,8 @@ async function handleFormSubmit(e) {
     document.getElementById('uploadForm').reset();
     appState.selectedFiles = [];
     document.getElementById('fileQueueContainer').classList.add('hidden');
-    refreshData();
+    // รอให้ Apps Script เขียนแถวลงชีตก่อน แล้วอ่านข้อมูลจากเซิร์ฟเวอร์ใหม่โดยไม่ใช้แคช
+    setTimeout(() => refreshData(true), 1200);
   }
 }
 

@@ -224,10 +224,12 @@ function uploadFileToDrive(base64Data, filename, mimeType, category, uploader, d
     const folder = DriveApp.getFolderById(FOLDER_ID); 
     const blob = Utilities.newBlob(Utilities.base64Decode(base64Data), mimeType, filename);
     const file = folder.createFile(blob);
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    // บาง Google Workspace ปิดการแชร์สาธารณะไว้ จึงไม่ให้ขั้นตอนนี้ทำให้ข้อมูลไม่ถูกบันทึกลงชีต
+    try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (shareError) { Logger.log(shareError); }
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     let docSheet = ss.getSheetByName(SHEET_NAME);
-    if(docSheet) docSheet.appendRow([new Date(), "-", docTitle || filename, "อัปโหลดไฟล์", uploader, file.getUrl(), category, filename, docType || "ทั่วไป"]);
+    if(!docSheet) throw new Error(`ไม่พบชีต ${SHEET_NAME}`);
+    docSheet.appendRow([new Date(), "-", docTitle || filename, "อัปโหลดไฟล์", uploader, file.getUrl(), category, filename, docType || "ทั่วไป"]);
     logActivity(`อัปโหลดไฟล์: ${docTitle || filename} โดย ${uploader}`);
     return { success: true };
   } catch(e) { return { success: false, message: e.toString() }; }
