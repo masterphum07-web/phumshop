@@ -122,8 +122,9 @@ function filterDocuments() {
   const docs = appState.documents.filter(d => {
     const matchName = d.title.toLowerCase().includes(q);
     const matchCat = c ? d.category === c : true;
-    const matchType = d.docType === 'ทั่วไป'; // หน้าหลักแสดงเฉพาะแบบทั่วไป หรือถ้าอยากให้แสดงหมด ก็เอาเงื่อนไขนี้ออก
-    return matchName && matchCat && matchType;
+    // หน้าแรกเป็นคลังเอกสารรวม จึงต้องแสดงทุกประเภทเนื้อหา
+    // ส่วนโหมดเตรียมสอบยังคงมีตัวกรองประเภทแยกต่างหาก
+    return matchName && matchCat;
   });
   
   const tb = document.getElementById('docTableBody');
